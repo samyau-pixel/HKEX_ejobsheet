@@ -1,0 +1,27 @@
+# Frontend
+node_modules/
+.next/
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Environment
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Build
+static/
+public/tmp/

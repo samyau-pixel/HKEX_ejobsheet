@@ -57,22 +57,22 @@ Track E (US2 - Approve, US4 - Execute): Phases 4 + 6 (can run after Track C + D)
 
 ---
 
-## Phase 1: Project Setup
+## Phase 1: Project Setup ✓
 
 **Purpose**: Initialize project structure, dependencies, and tooling
 
 **⏱️ Est. Duration**: 2–3 hours
 
-- [ ] T001 Create monorepo project structure (backend/ + frontend/ directories)
-- [ ] T002 [P] Initialize backend: Node.js 18+, npm init, TypeScript setup (tsconfig.json, .eslintrc, jest.config.js)
-- [ ] T003 [P] Initialize frontend: Next.js 14+ create-next-app with TypeScript, Tailwind CSS, ESLint
-- [ ] T004 [P] Setup shared TypeScript interfaces directory (backend/src/types/, frontend/src/types/) for shared contracts
-- [ ] T005 Configure CI/CD: GitHub Actions workflows for lint, test, build, deploy (workflows/.github/workflows/)
-- [ ] T006 Create .env.example files (backend/.env.example, frontend/.env.local.example) with required variables
+- [x] T001 Create monorepo project structure (backend/ + frontend/ directories)
+- [x] T002 [P] Initialize backend: Node.js 18+, npm init, TypeScript setup (tsconfig.json, .eslintrc, jest.config.js)
+- [x] T003 [P] Initialize frontend: Next.js 14+ create-next-app with TypeScript, Tailwind CSS, ESLint
+- [x] T004 [P] Setup shared TypeScript interfaces directory (backend/src/types/, frontend/src/types/) for shared contracts
+- [x] T005 Configure CI/CD: GitHub Actions workflows for lint, test, build, deploy (workflows/.github/workflows/)
+- [x] T006 Create .env.example files (backend/.env.example, frontend/.env.local.example) with required variables
 
 ---
 
-## Phase 2: Foundational Infrastructure
+## Phase 2: Foundational Infrastructure ✓
 
 **Purpose**: Shared infrastructure that blocks all user story implementation
 
@@ -82,31 +82,31 @@ Track E (US2 - Approve, US4 - Execute): Phases 4 + 6 (can run after Track C + D)
 
 ### Database & Models
 
-- [ ] T007 [P] Create SQLite schema initialization script in backend/src/db/schema.ts (7 tables: users, templates, jobs, procedures, execution_jobsheets, execution_jobs, job_completions)
-- [ ] T008 [P] Create database seed script backend/src/db/seed.ts (test users: Manager, Operator, Operator Leader + sample templates)
-- [ ] T009 [P] Create User model with bcrypt password hashing in backend/src/models/user.model.ts (validation, entity definition)
-- [ ] T010 [P] Create base types/interfaces in backend/src/types/index.ts (User, Template, Job, Procedure, ExecutionJobsheet types)
+- [x] T007 [P] Create SQLite schema initialization script in backend/src/db/schema.ts (7 tables: users, templates, jobs, procedures, execution_jobsheets, execution_jobs, job_completions)
+- [x] T008 [P] Create database seed script backend/src/db/seed.ts (test users: Manager, Operator, Operator Leader + sample templates)
+- [x] T009 [P] Create User model with bcrypt password hashing in backend/src/models/user.model.ts (validation, entity definition)
+- [x] T010 [P] Create base types/interfaces in backend/src/types/index.ts (User, Template, Job, Procedure, ExecutionJobsheet types)
 
 ### Authentication & Authorization
 
-- [ ] T011 [P] Implement JWT token generation/validation in backend/src/services/auth.service.ts (generateToken, validateToken, refreshToken)
-- [ ] T012 [P] Implement auth middleware in backend/src/middleware/auth.middleware.ts (JWT verification, role extraction, RBAC enforcement)
-- [ ] T013 [P] Create RBAC permission guard in backend/src/middleware/rbac.middleware.ts (requireRole function for role-based route protection)
+- [x] T011 [P] Implement JWT token generation/validation in backend/src/services/auth.service.ts (generateToken, validateToken, refreshToken)
+- [x] T012 [P] Implement auth middleware in backend/src/middleware/auth.middleware.ts (JWT verification, role extraction, RBAC enforcement)
+- [x] T013 [P] Create RBAC permission guard in backend/src/middleware/rbac.middleware.ts (requireRole function for role-based route protection)
 
 ### API Infrastructure
 
-- [ ] T014 [P] Setup Express app with middleware stack in backend/src/app.ts (cors, json parsing, auth, error handling)
-- [ ] T015 [P] Create global error handler middleware in backend/src/middleware/error.middleware.ts (structured JSON error responses with correlation IDs)
-- [ ] T016 [P] Setup structured JSON logging with pino in backend/src/middleware/logging.middleware.ts (correlation IDs, request logging)
+- [x] T014 [P] Setup Express app with middleware stack in backend/src/app.ts (cors, json parsing, auth, error handling)
+- [x] T015 [P] Create global error handler middleware in backend/src/middleware/error.middleware.ts (structured JSON error responses with correlation IDs)
+- [x] T016 [P] Setup structured JSON logging with pino in backend/src/middleware/logging.middleware.ts (correlation IDs, request logging)
 
 ### Frontend Infrastructure
 
-- [ ] T017 [P] Create authentication context/state in frontend/src/services/auth.service.ts (login, logout, token management, role checking)
-- [ ] T018 [P] Create API client utility in frontend/src/services/api.client.ts (axios instance with JWT header injection, error handling)
+- [x] T017 [P] Create authentication context/state in frontend/src/services/auth.service.ts (login, logout, token management, role checking)
+- [x] T018 [P] Create API client utility in frontend/src/services/api.client.ts (axios instance with JWT header injection, error handling)
 
 ---
 
-## Phase 3: User Story 1 – Operator Creates Jobsheet Template (Priority: P1)
+## Phase 3: User Story 1 – Operator Creates Jobsheet Template (Priority: P1) ✓
 
 **Goal**: Operators can create new jobsheet templates with multiple jobs and procedures
 
@@ -116,27 +116,27 @@ Track E (US2 - Approve, US4 - Execute): Phases 4 + 6 (can run after Track C + D)
 
 ### Tests for US1
 
-- [ ] T019 [P] [US1] Contract test: POST /templates request/response validation in backend/tests/contract/templates.test.ts
-- [ ] T020 [P] [US1] Integration test: Create template workflow (login + create + verify state) in backend/tests/integration/templates.test.ts
-- [ ] T021 [P] [US1] Integration test: Template validation (required fields, procedures order) in backend/tests/integration/templates.test.ts
-- [ ] T022 [US1] E2E test: User creates template via UI form in frontend/tests/e2e/template-creation.spec.ts (requires running backend)
+- [x] T019 [P] [US1] Contract test: POST /templates request/response validation in backend/tests/contract/templates.test.ts
+- [x] T020 [P] [US1] Integration test: Create template workflow (login + create + verify state) in backend/tests/integration/templates.test.ts
+- [x] T021 [P] [US1] Integration test: Template validation (required fields, procedures order) in backend/tests/integration/templates.test.ts
+- [x] T022 [US1] E2E test: User creates template via UI form in frontend/tests/e2e/template-creation.spec.ts (requires running backend)
 
 ### Backend Implementation for US1
 
-- [ ] T023 [P] [US1] Create Template model in backend/src/models/template.model.ts (entity validation, relationships to jobs/procedures)
-- [ ] T024 [P] [US1] Create Job model in backend/src/models/job.model.ts (attributes: name, order, expected start/end)
-- [ ] T025 [P] [US1] Create Procedure model in backend/src/models/procedure.model.ts (attributes: name, description, order)
-- [ ] T026 [US1] Implement TemplateService in backend/src/services/template.service.ts (createTemplate, validateTemplate, getTemplate)
-- [ ] T027 [US1] Create template routes in backend/src/routes/templates.routes.ts (POST /templates with validation middleware)
-- [ ] T028 [US1] Add input validation schema for template creation in backend/src/middleware/validation.middleware.ts (joi schemas for template/job/procedure)
+- [x] T023 [P] [US1] Create Template model in backend/src/models/template.model.ts (entity validation, relationships to jobs/procedures)
+- [x] T024 [P] [US1] Create Job model in backend/src/models/job.model.ts (attributes: name, order, expected start/end)
+- [x] T025 [P] [US1] Create Procedure model in backend/src/models/procedure.model.ts (attributes: name, description, order)
+- [x] T026 [US1] Implement TemplateService in backend/src/services/template.service.ts (createTemplate, validateTemplate, getTemplate)
+- [x] T027 [US1] Create template routes in backend/src/routes/templates.routes.ts (POST /templates with validation middleware)
+- [x] T028 [US1] Add input validation schema for template creation in backend/src/middleware/validation.middleware.ts (joi schemas for template/job/procedure)
 
 ### Frontend Implementation for US1
 
-- [ ] T029 [P] [US1] Create Template entity types in frontend/src/types/template.ts (TypeScript interfaces)
-- [ ] T030 [P] [US1] Create template API service in frontend/src/services/template.service.ts (createTemplate, getTemplates, getTemplate functions)
-- [ ] T031 [US1] Build template creation form component in frontend/src/components/templates/CreateTemplateForm.tsx (jobs array, procedures nested forms, date pickers)
-- [ ] T032 [US1] Create templates list page in frontend/src/app/(protected)/templates/page.tsx (filtered by state, pagination)
-- [ ] T033 [US1] Add template state management in frontend/src/store/templateStore.ts (zustand or Context API for form state)
+- [x] T029 [P] [US1] Create Template entity types in frontend/src/types/template.ts (TypeScript interfaces)
+- [x] T030 [P] [US1] Create template API service in frontend/src/services/template.service.ts (createTemplate, getTemplates, getTemplate functions)
+- [x] T031 [US1] Build template creation form component in frontend/src/components/templates/CreateTemplateForm.tsx (jobs array, procedures nested forms, date pickers)
+- [x] T032 [US1] Create templates list page in frontend/src/app/(protected)/templates/page.tsx (filtered by state, pagination)
+- [x] T033 [US1] Add template state management in frontend/src/store/templateStore.ts (zustand or Context API for form state)
 
 **Checkpoint**: User Story 1 complete - Operators can create and save templates
 
