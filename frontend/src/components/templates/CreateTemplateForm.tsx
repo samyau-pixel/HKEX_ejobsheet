@@ -9,24 +9,38 @@ export const CreateTemplateForm: React.FC<{
   isLoading?: boolean;
   error?: string;
 }> = ({ onSubmit, isLoading = false, error = '' }) => {
-  const store = useTemplateFormStore();
+  const name = useTemplateFormStore((s) => s.name);
+  const description = useTemplateFormStore((s) => s.description);
+  const jobs = useTemplateFormStore((s) => s.jobs);
+
+  const setName = useTemplateFormStore((s) => s.setName);
+  const setDescription = useTemplateFormStore((s) => s.setDescription);
+  const addJobToStore = useTemplateFormStore((s) => s.addJob);
+  const addProcedureToStore = useTemplateFormStore((s) => s.addProcedure);
+  const updateJobInStore = useTemplateFormStore((s) => s.updateJob);
+  const removeJobFromStore = useTemplateFormStore((s) => s.removeJob);
+  const updateProcedureInStore = useTemplateFormStore((s) => s.updateProcedure);
+  const removeProcedureFromStore = useTemplateFormStore((s) => s.removeProcedure);
+  const resetStore = useTemplateFormStore((s) => s.reset);
+  const getFormData = useTemplateFormStore((s) => s.getFormData);
+
   const [formError, setFormError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
 
-    if (!store.name.trim()) {
+    if (!name.trim()) {
       setFormError('Template name is required');
       return;
     }
 
-    if (store.jobs.length === 0) {
+    if (jobs.length === 0) {
       setFormError('At least one job is required');
       return;
     }
 
-    for (const job of store.jobs) {
+    for (const job of jobs) {
       if (!job.procedures || job.procedures.length === 0) {
         setFormError(`Job "${job.name}" must have at least one procedure`);
         return;
@@ -34,8 +48,8 @@ export const CreateTemplateForm: React.FC<{
     }
 
     try {
-      await onSubmit(store.getFormData());
-      store.reset();
+      await onSubmit(getFormData());
+      resetStore();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Failed to create template');
     }
@@ -45,19 +59,19 @@ export const CreateTemplateForm: React.FC<{
     const newJob: Job = {
       name: '',
       description: '',
-      order: store.jobs.length + 1,
+      order: jobs.length + 1,
       procedures: [],
     };
-    store.addJob(newJob);
+    addJobToStore(newJob);
   };
 
   const addProcedure = (jobIndex: number) => {
     const newProcedure: Procedure = {
       name: '',
       description: '',
-      order: (store.jobs[jobIndex]?.procedures?.length || 0) + 1,
+      order: (jobs[jobIndex]?.procedures?.length || 0) + 1,
     };
-    store.addProcedure(jobIndex, newProcedure);
+    addProcedureToStore(jobIndex, newProcedure);
   };
 
   return (
@@ -76,8 +90,8 @@ export const CreateTemplateForm: React.FC<{
         <input
           id="name"
           type="text"
-          value={store.name}
-          onChange={(e) => store.setName(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           placeholder="e.g., Daily Maintenance"
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
@@ -91,8 +105,8 @@ export const CreateTemplateForm: React.FC<{
         </label>
         <textarea
           id="description"
-          value={store.description}
-          onChange={(e) => store.setDescription(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           placeholder="Optional: Describe what this template is used for"
           rows={3}
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -102,7 +116,7 @@ export const CreateTemplateForm: React.FC<{
       {/* Jobs section */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Jobs</h3>
-        {store.jobs.map((job, jobIndex) => (
+        {jobs.map((job, jobIndex) => (
           <div
             key={jobIndex}
             className="border rounded-lg p-4 space-y-3 bg-gray-50"
@@ -113,7 +127,7 @@ export const CreateTemplateForm: React.FC<{
                   type="text"
                   value={job.name}
                   onChange={(e) =>
-                    store.updateJob(jobIndex, {
+                    updateJobInStore(jobIndex, {
                       ...job,
                       name: e.target.value,
                     })
@@ -125,7 +139,7 @@ export const CreateTemplateForm: React.FC<{
               </div>
               <button
                 type="button"
-                onClick={() => store.removeJob(jobIndex)}
+                onClick={() => removeJobFromStore(jobIndex)}
                 className="ml-2 px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
               >
                 Remove
@@ -141,7 +155,7 @@ export const CreateTemplateForm: React.FC<{
                     type="text"
                     value={proc.name}
                     onChange={(e) =>
-                      store.updateProcedure(jobIndex, procIndex, {
+                      updateProcedureInStore(jobIndex, procIndex, {
                         ...proc,
                         name: e.target.value,
                       })
@@ -152,7 +166,7 @@ export const CreateTemplateForm: React.FC<{
                   />
                   <button
                     type="button"
-                    onClick={() => store.removeProcedure(jobIndex, procIndex)}
+                    onClick={() => removeProcedureFromStore(jobIndex, procIndex)}
                     className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
                   >
                     Remove
