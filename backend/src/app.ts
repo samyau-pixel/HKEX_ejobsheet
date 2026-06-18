@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import { requestIdMiddleware, loggingMiddleware } from './middleware/logging.middleware.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
 import templatesRoutes from './routes/templates.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import executionRoutes from './routes/execution.routes.js';
 
 dotenv.config();
 
@@ -35,7 +37,8 @@ app.get('/api/version', (_req: Request, res: Response) => {
 
 // Routes will be added here
 app.use('/api/templates', templatesRoutes);
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/execution-sheets', executionRoutes);
 // app.use('/api/execution', executionRoutes);
 // etc.
 

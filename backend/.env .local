@@ -1,0 +1,19 @@
+# Backend Environment Variables
+
+NODE_ENV=development
+PORT=3001
+HOST=localhost
+
+# Database
+DATABASE_URL=./data/jobsheet.db
+
+# JWT
+JWT_SECRET=your-super-secret-key-minimum-32-characters-for-production-use-env-var
+JWT_EXPIRY=1h
+REFRESH_TOKEN_EXPIRY=7d
+
+# Logging
+LOG_LEVEL=info
+
+# CORS
+FRONTEND_URL=http://localhost:3000

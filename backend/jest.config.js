@@ -3,6 +3,15 @@
   "testEnvironment": "node",
   "rootDir": "./",
   "testMatch": ["**/tests/**/*.test.ts"],
+  "transform": {
+    "^.+\\.ts$": ["ts-jest", { "useESM": true }]
+  },
+  "globals": {
+    "ts-jest": {
+      "useESM": true
+    }
+  },
+  "extensionsToTreatAsEsm": [".ts"],
   "collectCoverageFrom": [
     "src/**/*.ts",
     "!src/**/*.d.ts",

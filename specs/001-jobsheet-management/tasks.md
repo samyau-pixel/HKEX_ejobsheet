@@ -158,9 +158,9 @@ Track E (US2 - Approve, US4 - Execute): Phases 4 + 6 (can run after Track C + D)
 
 ### Backend Implementation for US2
 
-- [ ] T037 [US2] Implement approveTemplate method in backend/src/services/template.service.ts (state validation, RBAC check, immutability enforcement)
-- [ ] T038 [US2] Add approval route POST /templates/:id/approve in backend/src/routes/templates.routes.ts (role=Manager required)
-- [ ] T039 [US2] Update Template model to enforce immutability in backend/src/models/template.model.ts (prevent edits when state='Approved')
+- [x] T037 [US2] Implement approveTemplate method in backend/src/services/template.service.ts (state validation, RBAC check, immutability enforcement)
+- [x] T038 [US2] Add approval route POST /templates/:id/approve in backend/src/routes/templates.routes.ts (role=Manager required)
+- [x] T039 [US2] Update Template model to enforce immutability in backend/src/models/template.model.ts (prevent edits when state='Approved')
 
 ### Frontend Implementation for US2
 
@@ -182,25 +182,25 @@ Track E (US2 - Approve, US4 - Execute): Phases 4 + 6 (can run after Track C + D)
 **⏱️ Est. Duration**: 10–12 hours
 
 ### Tests for US3
+- [x] T044 [P] [US3] Contract test: POST /execution-sheets endpoint in backend/tests/contract/execution.test.ts
+- [x] T045 [P] [US3] Integration test: Create execution sheet from approved template in backend/tests/integration/execution.test.ts
+- [x] T046 [US3] Integration test: Reject creation from unapproved template in backend/tests/integration/execution.test.ts
 
-- [ ] T044 [P] [US3] Contract test: POST /execution-sheets endpoint in backend/tests/contract/execution.test.ts
-- [ ] T045 [P] [US3] Integration test: Create execution sheet from approved template in backend/tests/integration/execution.test.ts
-- [ ] T046 [US3] Integration test: Reject creation from unapproved template in backend/tests/integration/execution.test.ts
 
 ### Backend Implementation for US3
 
-- [ ] T047 [P] [US3] Create ExecutionJobsheet model in backend/src/models/execution.model.ts (state, checked_in_by, checked_in_at, relationships)
-- [ ] T048 [P] [US3] Create ExecutionJob model in backend/src/models/execution-job.model.ts (maps to template job, tracks actual dates)
-- [ ] T049 [US3] Implement ExecutionService in backend/src/services/execution.service.ts (createExecutionSheet cloning template, date customization)
-- [ ] T050 [US3] Add execution sheet routes in backend/src/routes/execution.routes.ts (POST /execution-sheets with cloning logic)
-- [ ] T051 [US3] Add execution sheet validation schema in backend/src/middleware/validation.middleware.ts (template must be approved, jobs with dates)
+- [x] T047 [P] [US3] Create ExecutionJobsheet model in backend/src/models/execution.model.ts (state, checked_in_by, checked_in_at, relationships)
+- [x] T048 [P] [US3] Create ExecutionJob model in backend/src/models/execution-job.model.ts (maps to template job, tracks actual dates)
+- [x] T049 [US3] Implement ExecutionService in backend/src/services/execution.service.ts (createExecutionSheet cloning template, date customization)
+- [x] T050 [US3] Add execution sheet routes in backend/src/routes/execution.routes.ts (POST /execution-sheets with cloning logic)
+- [x] T051 [US3] Add execution sheet validation schema in backend/src/middleware/validation.middleware.ts (template must be approved, jobs with dates)
 
 ### Frontend Implementation for US3
 
-- [ ] T052 [P] [US3] Create ExecutionJobsheet types in frontend/src/types/execution.ts (TypeScript interfaces)
-- [ ] T053 [P] [US3] Create execution API service in frontend/src/services/execution.service.ts (createExecutionSheet, getExecutionSheets functions)
-- [ ] T054 [US3] Build execution sheet creation form in frontend/src/components/execution/CreateExecutionForm.tsx (template selector, job date customization)
-- [ ] T055 [US3] Create execution sheet list/dashboard in frontend/src/app/(protected)/execution/page.tsx (filtered by state)
+- [x] T052 [P] [US3] Create ExecutionJobsheet types in frontend/src/types/execution.ts (TypeScript interfaces)
+- [x] T053 [P] [US3] Create execution API service in frontend/src/services/execution.service.ts (createExecutionSheet, getExecutionSheets functions)
+- [x] T054 [US3] Build execution sheet creation form in frontend/src/components/execution/CreateExecutionForm.tsx (template selector, job date customization)
+- [x] T055 [US3] Create execution sheet list/dashboard in frontend/src/app/(protected)/execution/page.tsx (filtered by state)
 
 **Checkpoint**: User Story 3 complete - Execution sheets can be created from templates
 
@@ -225,19 +225,19 @@ Track E (US2 - Approve, US4 - Execute): Phases 4 + 6 (can run after Track C + D)
 
 ### Backend Implementation for US4
 
-- [ ] T062 [P] [US4] Create JobCompletion model in backend/src/models/job-completion.model.ts (tracks which user completed which job, timestamps)
-- [ ] T063 [US4] Implement state machine logic in backend/src/services/execution.service.ts (checkIn, markJobComplete, completeExecutionSheet with state validation)
-- [ ] T064 [US4] Add check-in route POST /execution-sheets/:id/check-in in backend/src/routes/execution.routes.ts (set checked_in_by, checked_in_at, state='Processing')
-- [ ] T065 [US4] Add job completion route POST /execution-sheets/:id/jobs/:jobId/complete in backend/src/routes/execution.routes.ts (insert into job_completions table)
-- [ ] T066 [US4] Add complete sheet route POST /execution-sheets/:id/complete in backend/src/routes/execution.routes.ts (validate all jobs marked, transition to Completed)
-- [ ] T067 [US4] Add concurrent check-in rejection logic in backend/src/services/execution.service.ts (409 CONCURRENT_CHECKIN error if already checked in by different user)
+- [x] T062 [P] [US4] Create JobCompletion model in backend/src/models/job-completion.model.ts (tracks which user completed which job, timestamps)
+- [x] T063 [US4] Implement state machine logic in backend/src/services/execution.service.ts (checkIn, markJobComplete, completeExecutionSheet with state validation)
+- [x] T064 [US4] Add check-in route POST /execution-sheets/:id/check-in in backend/src/routes/execution.routes.ts (set checked_in_by, checked_in_at, state='Processing')
+- [x] T065 [US4] Add job completion route POST /execution-sheets/:id/jobs/:jobId/complete in backend/src/routes/execution.routes.ts (insert into job_completions table)
+- [x] T066 [US4] Add complete sheet route POST /execution-sheets/:id/complete in backend/src/routes/execution.routes.ts (validate all jobs marked, transition to Completed)
+- [x] T067 [US4] Add concurrent check-in rejection logic in backend/src/services/execution.service.ts (409 CONCURRENT_CHECKIN error if already checked in by different user)
 
 ### Frontend Implementation for US4
 
-- [ ] T068 [P] [US4] Build check-in button/modal in frontend/src/components/execution/CheckInModal.tsx (confirmation, error handling for concurrent access)
-- [ ] T069 [P] [US4] Create job completion UI in frontend/src/components/execution/JobCompletionForm.tsx (checkboxes, timestamp tracking)
-- [ ] T070 [US4] Build execution sheet detail page in frontend/src/app/(protected)/execution/:id/page.tsx (jobs list, completion status, buttons)
-- [ ] T071 [US4] Add complete sheet button in frontend/src/components/execution/CompleteSheetButton.tsx (validation that all jobs marked)
+- [x] T068 [P] [US4] Build check-in button/modal in frontend/src/components/execution/CheckInModal.tsx (confirmation, error handling for concurrent access)
+- [x] T069 [P] [US4] Create job completion UI in frontend/src/components/execution/JobCompletionForm.tsx (checkboxes, timestamp tracking)
+- [x] T070 [US4] Build execution sheet detail page in frontend/src/app/(protected)/execution/:id/page.tsx (jobs list, completion status, buttons)
+- [x] T071 [US4] Add complete sheet button in frontend/src/components/execution/CompleteSheetButton.tsx (validation that all jobs marked)
 - [ ] T072 [US4] Implement real-time progress display in frontend/src/components/execution/ExecutionProgress.tsx (completed count, total jobs)
 
 **Checkpoint**: User Story 4 complete - MVP execution workflow fully functional

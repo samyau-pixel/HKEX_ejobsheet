@@ -8,6 +8,41 @@ export interface User {
   updated_at: string;
 }
 
+export interface ExecutionJobsheet {
+  id: string;
+  template_id: string;
+  user_id: string;
+  name: string;
+  state: 'Pending' | 'Approved' | 'Processing' | 'Completed';
+  checked_in_by?: string;
+  checked_in_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ExecutionJob {
+  id: string;
+  execution_id: string;
+  job_id: string;
+  expected_start?: string;
+  expected_end?: string;
+  actual_start?: string;
+  actual_end?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobCompletion {
+  id: string;
+  execution_id: string;
+  job_id: string;
+  completed: boolean;
+  completed_by?: string;
+  completed_at?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
 export interface Template {
   id: string;
   user_id: string;
