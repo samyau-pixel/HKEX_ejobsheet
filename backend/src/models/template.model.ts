@@ -104,6 +104,29 @@ export class TemplateModel {
     });
   }
 
+  static async updateTemplate(id: string, name: string, description?: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const now = new Date().toISOString();
+      db.run(
+        'UPDATE templates SET name = ?, description = ?, updated_at = ? WHERE id = ?',
+        [name, description || null, now, id],
+        function (err) {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+  }
+
+  static async deleteTemplate(id: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      db.run('DELETE FROM templates WHERE id = ?', [id], function (err) {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  }
+
   static async countByState(state: string): Promise<number> {
     return new Promise((resolve, reject) => {
       db.get(

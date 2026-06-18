@@ -28,15 +28,6 @@ export default function ExecutionListPage() {
     window.location.replace(`/execution/${id}`);
   };
 
-  const handleComplete = async (id: string) => {
-    try {
-      await ExecutionService.completeExecution(id);
-      await load();
-    } catch (err: any) {
-      alert(err?.response?.data?.message || 'Unable to complete execution');
-    }
-  };
-
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-4">
@@ -62,7 +53,7 @@ export default function ExecutionListPage() {
                   <button className="btn" onClick={() => handleCheckIn(s.id)}>Check In</button>
                 )}
                 {s.state === 'Processing' && (
-                  <button className="btn btn-primary" onClick={() => handleComplete(s.id)}>Complete</button>
+                  <></>
                 )}
               </div>
             </div>

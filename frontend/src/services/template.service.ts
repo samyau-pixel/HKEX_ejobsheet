@@ -27,4 +27,24 @@ export class TemplateService {
     const response = await apiClient.post(`/templates/${id}/approve`);
     return response.data.data;
   }
+
+  static async rejectTemplate(id: string): Promise<void> {
+    const response = await apiClient.post(`/templates/${id}/reject`);
+    return response.data.data;
+  }
+
+  static async updateTemplate(id: string, input: CreateTemplateInput): Promise<Template> {
+    const response = await apiClient.put(`/templates/${id}`, input);
+    return response.data.data;
+  }
+
+  static async cloneTemplate(id: string): Promise<Template> {
+    const response = await apiClient.post(`/templates/${id}/clone`);
+    return response.data.data;
+  }
+
+  static async deleteTemplate(id: string): Promise<void> {
+    const response = await apiClient.delete(`/templates/${id}`);
+    return response.data.data;
+  }
 }

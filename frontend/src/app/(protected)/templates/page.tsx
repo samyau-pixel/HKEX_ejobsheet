@@ -43,6 +43,21 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleReject = async (id: string) => {
+    if (!confirm('Reject and remove this template? This cannot be undone.')) return;
+    try {
+      await TemplateService.rejectTemplate(id);
+      setLoading(true);
+      const t = await TemplateService.getTemplates();
+      setTemplates(t || []);
+    } catch (err) {
+      console.error('Reject failed', err);
+      alert('Failed to reject template');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const pending = templates.filter((t) => t.state === 'Pending');
   const approved = templates.filter((t) => t.state === 'Approved');
 
@@ -76,6 +91,9 @@ export default function TemplatesPage() {
                     </div>
                       <div className="flex items-center gap-4">
                         <div className="text-sm text-gray-500">{new Date(t.created_at).toLocaleString()}</div>
+                          <div className="ml-4">
+                            <Link href={`/templates/${t.id}/edit`} className="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">Edit</Link>
+                          </div>
                         {user?.role === 'Manager' && (
                           <button
                             onClick={() => handleApprove(t.id)}
@@ -84,6 +102,14 @@ export default function TemplatesPage() {
                             Approve
                           </button>
                         )}
+                          {user?.role === 'Manager' && (
+                            <button
+                              onClick={() => handleReject(t.id)}
+                              className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                            >
+                              Reject
+                            </button>
+                          )}
                       </div>
                   </div>
                 </li>
@@ -107,7 +133,48 @@ export default function TemplatesPage() {
                       <div className="font-semibold">{t.name}</div>
                       <div className="text-sm text-gray-600">{t.description}</div>
                     </div>
-                    <div className="text-sm text-gray-500">{new Date(t.created_at).toLocaleString()}</div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm text-gray-500">{new Date(t.created_at).toLocaleString()}</div>
+                      {user?.role === 'Manager' && (
+                        <div className="ml-4 flex items-center gap-2">
+                          <Link href={`/templates/${t.id}/edit`} className="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">Edit</Link>
+                          <button
+                            onClick={async () => {
+                              if (!confirm('Clone this template for editing? A new Pending copy will be created.')) return;
+                              try {
+                                const cloned = await TemplateService.cloneTemplate(t.id);
+                                window.location.href = `/templates/${cloned.id}/edit`;
+                              } catch (err) {
+                                console.error('Clone failed', err);
+                                alert('Failed to clone template');
+                              }
+                            }}
+                            className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                          >
+                            Clone & Edit
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!confirm('Delete this template? This cannot be undone.')) return;
+                              try {
+                                await TemplateService.deleteTemplate(t.id);
+                                setLoading(true);
+                                const tlist = await TemplateService.getTemplates();
+                                setTemplates(tlist || []);
+                              } catch (err) {
+                                console.error('Delete failed', err);
+                                alert('Failed to delete template');
+                              } finally {
+                                setLoading(false);
+                              }
+                            }}
+                            className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}

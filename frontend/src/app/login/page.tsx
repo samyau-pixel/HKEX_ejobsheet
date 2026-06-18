@@ -18,7 +18,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      router.push('/templates/create');
+      router.push('/home');
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Login failed');
     } finally {

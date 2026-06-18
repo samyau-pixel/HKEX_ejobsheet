@@ -104,5 +104,69 @@ router.post(
   }
 );
 
+// POST /templates/:id/reject - Reject and remove pending template
+router.post(
+  '/:id/reject',
+  authMiddleware,
+  rbacMiddleware('Manager'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await TemplateService.rejectTemplate(req.params.id);
+      res.status(200).json({ status: 200, data: null, message: 'Template rejected and removed', requestId: req.headers['x-request-id'] || '' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// POST /templates/:id/clone - Clone template into a new Pending template for editing
+router.post(
+  '/:id/clone',
+  authMiddleware,
+  rbacMiddleware('Manager'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.auth?.userId;
+      if (!userId) throw new ApiError(401, 'UNAUTHORIZED', 'User ID not found in token');
+
+      const newTemplate = await TemplateService.cloneTemplate(req.params.id, userId);
+      res.status(201).json({ status: 201, data: newTemplate, message: 'Template cloned', requestId: req.headers['x-request-id'] || '' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// PUT /templates/:id - Update an approved template
+router.put(
+  '/:id',
+  authMiddleware,
+  rbacMiddleware('Manager'),
+  validateRequest(templateSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const updated = await TemplateService.updateTemplate(req.params.id, req.body);
+      res.status(200).json({ status: 200, data: updated, message: 'Template updated', requestId: req.headers['x-request-id'] || '' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// DELETE /templates/:id - Delete a template (Approved or Pending)
+router.delete(
+  '/:id',
+  authMiddleware,
+  rbacMiddleware('Manager'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await TemplateService.deleteTemplate(req.params.id);
+      res.status(200).json({ status: 200, data: null, message: 'Template deleted', requestId: req.headers['x-request-id'] || '' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default router;
 

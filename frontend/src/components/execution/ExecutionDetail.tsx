@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ExecutionService } from '../../services/execution.service';
 import CheckInModal from './CheckInModal';
 import CompleteSheetButton from './CompleteSheetButton';
@@ -16,6 +17,7 @@ export default function ExecutionDetail({ id }: { id: string }) {
   };
 
   useEffect(() => { load(); }, [id]);
+  const router = useRouter();
 
   const toggleComplete = async (jobId: string, completed: boolean) => {
     if (completed) {
@@ -34,15 +36,21 @@ export default function ExecutionDetail({ id }: { id: string }) {
           <h2 className="text-xl font-bold">{detail.name}</h2>
           <div className="text-sm text-gray-600">State: {detail.state}</div>
           <div className="mt-4 mb-4">
-            {detail.state === 'Pending' && (
-              <div className="space-x-2">
-                <button className="btn" onClick={() => setShowCheckIn(true)}>Check In</button>
-                <CompleteSheetButton id={id} onDone={load} />
-              </div>
-            )}
-            {detail.state === 'Processing' && (
-              <CompleteSheetButton id={id} onDone={load} />
-            )}
+            {detail.state === 'Pending' && ( 
+              <div className="space-x-2"> 
+                <button className="btn" onClick={() => setShowCheckIn(true)}>Check In</button> 
+              </div> 
+            )} 
+            {detail.state === 'Processing' && ( 
+              <div className="space-x-2"> 
+                {/** Only enable complete when all jobs are marked completed */} 
+                <CompleteSheetButton id={id} onDone={load} disabled={!(detail.jobs && detail.jobs.length > 0 && detail.jobs.every((j: any) => !!j.completed))} /> 
+                <button className="btn" onClick={() => router.back()}>Check Out</button> 
+              </div> 
+            )} 
+            {detail.state === 'Completed' && ( 
+              <div className="text-sm text-green-600">This sheet is completed.</div> 
+            )} 
           </div>
 
           <div className="mt-4 space-y-3">

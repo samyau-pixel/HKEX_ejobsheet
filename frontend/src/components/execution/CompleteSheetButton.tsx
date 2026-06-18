@@ -3,8 +3,17 @@
 import React from 'react';
 import { ExecutionService } from '../../services/execution.service';
 
-export default function CompleteSheetButton({ id, onDone }: { id: string; onDone: () => void }) {
+export default function CompleteSheetButton({
+  id,
+  onDone,
+  disabled,
+}: {
+  id: string;
+  onDone: () => void;
+  disabled?: boolean;
+}) {
   const handleComplete = async () => {
+    if (disabled) return;
     try {
       await ExecutionService.completeExecution(id);
       onDone();
@@ -14,6 +23,13 @@ export default function CompleteSheetButton({ id, onDone }: { id: string; onDone
   };
 
   return (
-    <button className="btn btn-primary" onClick={handleComplete}>Complete Sheet</button>
+    <button
+      className={`btn btn-primary ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      onClick={handleComplete}
+      disabled={disabled}
+      title={disabled ? 'All jobs must be completed before completing the sheet' : 'Complete sheet'}
+    >
+      Complete Sheet
+    </button>
   );
 }
