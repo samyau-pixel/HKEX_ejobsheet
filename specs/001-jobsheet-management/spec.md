@@ -44,20 +44,21 @@ Manager logs in and reviews pending Jobsheet templates. After verification, they
 
 ---
 
-### User Story 3 - Operator Creates Execution Jobsheet from Template (Priority: P1)
+### User Story 3 - Operator Executes Assigned Execution Jobsheet (Priority: P1)
 
-Operator clones an approved template to create an Execution Jobsheet, optionally customizing job dates/times before creation.
+Operator receives an Execution Jobsheet (created by Manager/OperatorLeader) and performs check-in/check-out operations, progressing through jobs and marking them complete.
 
-**Why this priority**: P1; essential for beginning job execution. Operators must be able to instantiate templates with job-specific scheduling.
+**Why this priority**: P1; essential for beginning job execution. Operators must be able to execute assigned jobsheets with job-specific scheduling.
 
-**Independent Test**: Can be fully tested by: (1) Operator selects approved template, (2) Creates execution sheet with custom dates, (3) Verifies it appears in "Processing" dashboard. Delivers: template instantiation and customizable scheduling.
+**Independent Test**: Can be fully tested by: (1) Operator receives assigned execution jobsheet, (2) Checks in and customizes job dates, (3) Verifies it appears in "Processing" dashboard. Delivers: execution workflow and customizable scheduling.
 
 **Acceptance Scenarios**:
 
-1. **Given** Operator is on Processing Jobsheet page, **When** they click "Create Execution Jobsheet", **Then** a list of approved templates appears.
-2. **Given** a template is selected, **When** Operator customizes the template name and adjusts expected start/end dates for each job, **Then** all changes are captured.
-3. **Given** customization is complete, **When** Operator clicks "Create", **Then** the Execution Jobsheet is created in "Pending" state with check-in/check-out capability.
-4. **Given** execution sheet is created, **When** Operator views the Processing dashboard, **Then** the new sheet appears with "Check-In" button available.
+1. **Given** Operator is on Processing Jobsheet page, **When** they view assigned execution jobsheets, **Then** they see a list of jobsheets available for check-in.
+2. **Given** an execution jobsheet is selected, **When** Operator checks in, **Then** they can customize the template name and adjust expected start/end dates for each job.
+3. **Given** check-in is complete, **When** Operator clicks "Check-In", **Then** the Execution Jobsheet state changes to "Processing" with check-in/check-out buttons available.
+4. **Given** execution sheet is checked in, **When** Operator views the Processing dashboard, **Then** the sheet appears with job completion checkboxes available.
+5. **Given** Operator is viewing an execution jobsheet, **When** they attempt to create a new execution jobsheet, **Then** the option is not available (execution jobsheet creation is restricted to Manager/OperatorLeader roles).
 
 ---
 
@@ -126,11 +127,11 @@ Manager or Operator Leader logs in and views completed Execution Jobsheets to re
 
 - **FR-001**: System MUST support three user roles (Manager, Operator Leader, Operator) with distinct permissions and workflows.
 - **FR-002**: Manager role MUST be able to approve/reject Jobsheet templates and review all completed sheets.
-- **FR-003**: Operator role MUST be able to create Jobsheet templates, create Execution Jobsheets, and perform check-in/check-out operations.
-- **FR-004**: Operator Leader role MUST be able to create templates, create Execution Jobsheets, and review completed sheets (same as Operator + Manager review permissions).
+- **FR-003**: Operator role MUST be able to view assigned Execution Jobsheets and perform check-in/check-out operations. Operators CANNOT create or edit Jobsheet templates. Operators CANNOT create Execution Jobsheets.
+- **FR-004**: Operator Leader role MUST be able to create Jobsheet templates, create Execution Jobsheets from templates, perform check-in/check-out operations, and review completed sheets (same as Operator + Manager review permissions).
 - **FR-005**: System MUST support Jobsheet template states (Pending, Approved) and persist all template metadata.
 - **FR-006**: System MUST support Execution Jobsheet states (Pending, Approved, Processing, Completed).
-- **FR-007**: System MUST allow Operators to clone approved templates into Execution Jobsheets with customizable job dates/times.
+- **FR-007**: System MUST allow Manager/OperatorLeader to clone approved templates into Execution Jobsheets with customizable job dates/times.
 - **FR-008**: System MUST support check-in/check-out functionality for Execution Jobsheets with automatic data persistence.
 - **FR-009**: System MUST allow Operators to mark individual jobs as complete via checkboxes and mark entire Execution Jobsheet as complete.
 - **FR-010**: System MUST preserve job completion progress across check-out and subsequent check-in sessions.
@@ -156,7 +157,7 @@ Manager or Operator Leader logs in and views completed Execution Jobsheets to re
 
 - **SC-001**: Operators can create a Jobsheet template with 5+ jobs and 3+ procedures per job in under 5 minutes.
 - **SC-002**: Manager can review and approve a pending template in under 2 minutes (view + approve action).
-- **SC-003**: Operator can create an Execution Jobsheet from a template and customize job dates in under 3 minutes.
+- **SC-003**: Manager/OperatorLeader can create an Execution Jobsheet from a template and customize job dates in under 3 minutes.
 - **SC-004**: Operator can check-in, mark 5 jobs complete, and check-out within an active session in under 10 minutes.
 - **SC-005**: System preserves 100% of job completion data across check-out and resumption (no data loss on checkout).
 - **SC-006**: All role-based access controls are enforced; unauthorized users cannot access restricted pages (HTTP 403 responses or redirect to login).
