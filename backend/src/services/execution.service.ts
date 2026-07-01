@@ -6,6 +6,7 @@ import { ExecutionJobModel } from '../models/execution-job.model.js';
 import { JobCompletionModel } from '../models/job-completion.model.js';
 import { ProcedureModel } from '../models/procedure.model.js';
 import { ApiError } from '../middleware/error.middleware.js';
+import { LeaderReviewService } from './leader-review.service.js';
 
 export class ExecutionService {
   static async createExecutionFromTemplate(userId: string, templateId: string, name?: string) {
@@ -60,6 +61,8 @@ export class ExecutionService {
       throw new ApiError(409, 'INVALID_STATE', 'Execution must be Processing to change job completion');
     }
     await JobCompletionModel.unmarkCompleted(executionId, jobId);
+    // Invalidate leader review when job is unmarked
+    await JobCompletionModel.invalidateLeaderReview(executionId, jobId);
     return { executionId, jobId };
   }
 
@@ -76,6 +79,16 @@ export class ExecutionService {
 
     if (total === 0) throw new ApiError(400, 'NO_JOBS', 'Execution has no jobs');
     if (completed < total) throw new ApiError(400, 'INCOMPLETE_JOBS', 'Not all jobs are completed');
+
+    // Check if all jobs have been leader reviewed
+    const reviewStatus = await LeaderReviewService.checkAllJobsReviewed(executionId);
+    if (!reviewStatus.allReviewed) {
+      throw new ApiError(
+        400, 
+        'PENDING_LEADER_REVIEWS', 
+        `All jobs must be reviewed by the Operator Leader before completion. ${reviewStatus.pendingCount} of ${total} jobs pending review.`
+      );
+    }
 
     await ExecutionModel.updateState(executionId, 'Completed');
     return await ExecutionModel.getExecutionById(executionId);
@@ -98,8 +111,13 @@ export class ExecutionService {
       const procedures = await ProcedureModel.getProceduresByJob(j.job_id);
       jobsWithStatus.push({
         ...j,
+        job_name: j.job_name || j.name,
         completed: comp ? !!comp.completed : false,
         completed_by: comp ? comp.completed_by : null,
+        leader_reviewed: comp ? !!comp.leader_reviewed : false,
+        leader_reviewed_by: comp ? comp.leader_reviewed_by : null,
+        leader_name: comp ? comp.leader_reviewed_by : null, // Will be populated with a join if needed
+        leader_reviewed_at: comp ? comp.leader_reviewed_at : null,
         procedures,
       });
     }

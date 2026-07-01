@@ -89,4 +89,94 @@ export class JobCompletionModel {
       });
     });
   }
+
+  // Leader Review Methods
+  static async recordLeaderReview(executionId: string, jobId: string, userId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const now = new Date().toISOString();
+      db.run(
+        'UPDATE job_completions SET leader_reviewed = 1, leader_reviewed_by = ?, leader_reviewed_at = ?, updated_at = ? WHERE execution_id = ? AND job_id = ?',
+        [userId, now, now, executionId, jobId],
+        function (err) {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+  }
+
+  static async invalidateLeaderReview(executionId: string, jobId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const now = new Date().toISOString();
+      db.run(
+        'UPDATE job_completions SET leader_reviewed = 0, leader_reviewed_by = NULL, leader_reviewed_at = NULL, updated_at = ? WHERE execution_id = ? AND job_id = ?',
+        [now, executionId, jobId],
+        function (err) {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+  }
+
+  static async getLeaderReviewStatus(executionId: string, jobId: string): Promise<{ leader_reviewed: boolean; leader_reviewed_by: string | null; leader_reviewed_at: string | null }> {
+    return new Promise((resolve, reject) => {
+      db.get(
+        'SELECT leader_reviewed, leader_reviewed_by, leader_reviewed_at FROM job_completions WHERE execution_id = ? AND job_id = ?',
+        [executionId, jobId],
+        (err, row: any) => {
+          if (err) reject(err);
+          else if (!row) resolve({ leader_reviewed: false, leader_reviewed_by: null, leader_reviewed_at: null });
+          else resolve({
+            leader_reviewed: row.leader_reviewed === 1,
+            leader_reviewed_by: row.leader_reviewed_by,
+            leader_reviewed_at: row.leader_reviewed_at
+          });
+        }
+      );
+    });
+  }
+
+  static async getAllLeaderReviews(executionId: string): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      db.all(
+        `SELECT jc.job_id, jc.leader_reviewed, jc.leader_reviewed_by, u.name as leader_name, jc.leader_reviewed_at
+         FROM job_completions jc
+         LEFT JOIN users u ON jc.leader_reviewed_by = u.id
+         WHERE jc.execution_id = ?
+         ORDER BY jc.leader_reviewed_at DESC`,
+        [executionId],
+        (err, rows: any[]) => {
+          if (err) reject(err);
+          else resolve(rows || []);
+        }
+      );
+    });
+  }
+
+  static async allJobsLeaderReviewed(executionId: string): Promise<{ allReviewed: boolean; pendingCount: number; reviewedCount: number }> {
+    return new Promise((resolve, reject) => {
+      db.get(
+        `SELECT 
+          COUNT(*) as total_jobs,
+          SUM(CASE WHEN leader_reviewed = 1 THEN 1 ELSE 0 END) as reviewed_jobs
+         FROM job_completions
+         WHERE execution_id = ?`,
+        [executionId],
+        (err, row: any) => {
+          if (err) reject(err);
+          else if (!row) resolve({ allReviewed: false, pendingCount: 0, reviewedCount: 0 });
+          else {
+            const reviewedCount = row.reviewed_jobs || 0;
+            const totalCount = row.total_jobs || 0;
+            resolve({
+              allReviewed: totalCount > 0 && reviewedCount === totalCount,
+              pendingCount: totalCount - reviewedCount,
+              reviewedCount
+            });
+          }
+        }
+      );
+    });
+  }
 }

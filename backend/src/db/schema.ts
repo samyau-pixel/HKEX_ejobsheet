@@ -124,12 +124,16 @@ export const initializeDatabase = (): Promise<void> => {
           completed_by TEXT,
           completed_at TIMESTAMP,
           notes TEXT,
+          leader_reviewed INTEGER NOT NULL DEFAULT 0,
+          leader_reviewed_by TEXT,
+          leader_reviewed_at TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           UNIQUE(execution_id, job_id),
           FOREIGN KEY(execution_id) REFERENCES execution_jobsheets(id),
           FOREIGN KEY(job_id) REFERENCES jobs(id),
-          FOREIGN KEY(completed_by) REFERENCES users(id)
+          FOREIGN KEY(completed_by) REFERENCES users(id),
+          FOREIGN KEY(leader_reviewed_by) REFERENCES users(id)
         )
       `);
 
@@ -140,7 +144,9 @@ export const initializeDatabase = (): Promise<void> => {
       db.run('CREATE INDEX IF NOT EXISTS idx_execution_user ON execution_jobsheets(user_id)');
       db.run('CREATE INDEX IF NOT EXISTS idx_execution_checked_in ON execution_jobsheets(checked_in_by)');
       db.run('CREATE INDEX IF NOT EXISTS idx_jobs_template ON jobs(template_id)');
-      db.run('CREATE INDEX IF NOT EXISTS idx_procedures_job ON procedures(job_id)', (err) => {
+      db.run('CREATE INDEX IF NOT EXISTS idx_procedures_job ON procedures(job_id)');
+      db.run('CREATE INDEX IF NOT EXISTS idx_job_completions_leader_reviewed ON job_completions(execution_id, leader_reviewed)');
+      db.run('CREATE INDEX IF NOT EXISTS idx_job_completions_leader_reviewed_by ON job_completions(leader_reviewed_by)', (err) => {
         if (err) {
           reject(err);
         } else {

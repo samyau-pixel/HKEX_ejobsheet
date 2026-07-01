@@ -28,17 +28,22 @@ export default function EditTemplatePage({ params }: { params: { id: string } })
         setName(t.name || '');
         setDescription(t.description || '');
 
-        for (const job of t.jobs || []) {
-          addJob({ name: job.name, description: job.description || '', order: job.job_order || 1, procedures: [] });
-          const jobIndex = (useTemplateFormStore.getState().jobs.length || 1) - 1;
-          // set procedures
-          for (const proc of job.procedures || []) {
-            addProcedure(jobIndex, { name: proc.name, description: proc.description || '', order: proc.procedure_order });
-          }
-          // update job details to set expected times if present
-          const currentJob = useTemplateFormStore.getState().jobs[jobIndex];
-          updateJob(jobIndex, { ...currentJob, expected_start: job.expected_start, expected_end: job.expected_end });
-        }
+        // Build jobs with procedures and set them atomically to avoid duplication issues
+        const jobsForStore = (t.jobs || []).map((job: any, idx: number) => ({
+          name: job.name,
+          description: job.description || '',
+          order: job.job_order || idx + 1,
+          expected_start: job.expected_start,
+          expected_end: job.expected_end,
+          procedures: (job.procedures || []).map((p: any, pIdx: number) => ({
+            name: p.name,
+            description: p.description || '',
+            order: p.procedure_order || pIdx + 1,
+          })),
+        }));
+
+        // Use setJobs to update the store in one operation
+        useTemplateFormStore.getState().setJobs(jobsForStore as any);
       } catch (err: any) {
         setError(err?.message || 'Failed to load template');
       } finally {
@@ -50,20 +55,32 @@ export default function EditTemplatePage({ params }: { params: { id: string } })
 
   const handleSubmit = async (data: any) => {
     try {
+      setLoading(true);
       await TemplateService.updateTemplate(id, data);
       router.push('/templates');
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Failed to update template');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Edit Template</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => router.push('/templates')}
+          className="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+        >
+          ← Back
+        </button>
+        <h1 className="text-2xl font-bold">Edit Template</h1>
+      </div>
       {loading ? (
         <div>Loading…</div>
       ) : (
-        <CreateTemplateForm onSubmit={handleSubmit} isLoading={false} error={error} />
+        <CreateTemplateForm onSubmit={handleSubmit} isLoading={loading} error={error} submitLabel="Update Template" submittingLabel="Updating..." />
       )}
     </div>
   );

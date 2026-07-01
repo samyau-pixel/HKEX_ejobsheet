@@ -47,8 +47,16 @@ export const ExecutionService = {
 
   // Leader Review Methods
   async submitLeaderReview(executionId: string, jobId: string, userId: string, password: string): Promise<any> {
-    const resp = await apiClient.post(`/execution-sheets/${executionId}/jobs/${jobId}/leader-review`, { userId, password });
-    return resp.data.data;
+    try {
+      const resp = await apiClient.post(`/execution-sheets/${executionId}/jobs/${jobId}/leader-review`, { userId, password }, { skipAuthRedirect: true });
+      return resp.data.data;
+    } catch (err: any) {
+      // Handle invalid leader credentials specifically without triggering global logout
+      if (err.response?.status === 401 && err.response?.data?.error === 'AUTH_FAILED') {
+        return { success: false, message: err.response?.data?.message || 'Invalid credentials', error: 'AUTH_FAILED' };
+      }
+      throw err;
+    }
   },
 
   async getLeaderReviewStatus(executionId: string, jobId: string): Promise<LeaderReviewStatus> {

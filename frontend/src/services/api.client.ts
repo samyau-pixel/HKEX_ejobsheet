@@ -26,7 +26,9 @@ class ApiClient {
     this.instance.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
+        // If the request set skipAuthRedirect, do not perform the global redirect on 401
+        const skip = error.config && error.config.skipAuthRedirect;
+        if (error.response?.status === 401 && !skip) {
           if (typeof window !== 'undefined') {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user');

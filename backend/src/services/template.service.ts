@@ -140,10 +140,12 @@ export class TemplateService {
       throw new ApiError(404, 'TEMPLATE_NOT_FOUND', `Template ${id} not found`);
     }
 
-    // Allow editing only when Approved
-    if (template.state !== 'Approved') {
-      throw new ApiError(409, 'INVALID_STATE', 'Only approved templates can be edited');
+    // Allow editing when Approved or Pending
+    if (template.state !== 'Approved' && template.state !== 'Pending') {
+      throw new ApiError(409, 'INVALID_STATE', 'Template cannot be edited in its current state');
     }
+
+    const prevState = template.state;
 
     // Update template metadata
     await TemplateModel.updateTemplate(id, input.name, input.description);
@@ -191,14 +193,16 @@ export class TemplateService {
       });
     }
 
-    // After editing an approved template, mark it as Pending for re-approval
-    await TemplateModel.updateState(id, 'Pending');
+    // If editing an approved template, mark it as Pending for re-approval
+    if (prevState === 'Approved') {
+      await TemplateModel.updateState(id, 'Pending');
+    }
 
     return {
       ...template,
       name: input.name,
       description: input.description,
-      state: 'Pending',
+      state: prevState === 'Approved' ? 'Pending' : prevState,
       jobs: jobsWithProcedures,
     };
   }

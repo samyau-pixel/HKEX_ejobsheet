@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import app from './app.js';
 import { initializeDatabase } from './db/schema.js';
 import { seedDatabase } from './db/seed.js';
+import { up as runMigration } from './db/migrations/003-add-leader-review-columns.js';
 
 dotenv.config();
 
@@ -13,6 +14,10 @@ const startServer = async (): Promise<void> => {
     console.log('[INFO] Initializing database...');
     await initializeDatabase();
     console.log('[OK] Database schema initialized');
+
+    console.log('[INFO] Running migrations...');
+    await runMigration();
+    console.log('[OK] Migrations completed');
 
     console.log('[INFO] Seeding database with test data...');
     await seedDatabase();

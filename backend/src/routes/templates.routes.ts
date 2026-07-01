@@ -141,7 +141,8 @@ router.post(
 router.put(
   '/:id',
   authMiddleware,
-  rbacMiddleware('Manager'),
+  // Allow Operators to update templates (pending or approved) via the edit UI
+  rbacMiddleware('Operator', 'OperatorLeader', 'Manager'),
   validateRequest(templateSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

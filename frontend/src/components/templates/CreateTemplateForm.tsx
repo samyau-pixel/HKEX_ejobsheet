@@ -8,7 +8,9 @@ export const CreateTemplateForm: React.FC<{
   onSubmit: (data: any) => Promise<void>;
   isLoading?: boolean;
   error?: string;
-}> = ({ onSubmit, isLoading = false, error = '' }) => {
+  submitLabel?: string;
+  submittingLabel?: string;
+}> = ({ onSubmit, isLoading = false, error = '', submitLabel, submittingLabel }) => {
   const name = useTemplateFormStore((s) => s.name);
   const description = useTemplateFormStore((s) => s.description);
   const jobs = useTemplateFormStore((s) => s.jobs);
@@ -199,7 +201,7 @@ export const CreateTemplateForm: React.FC<{
         disabled={isLoading}
         className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
       >
-        {isLoading ? 'Creating...' : 'Create Template'}
+        {isLoading ? (submittingLabel || 'Creating...') : (submitLabel || 'Create Template')}
       </button>
     </form>
   );

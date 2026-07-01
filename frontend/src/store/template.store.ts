@@ -74,6 +74,7 @@ export const useTemplateFormStore = create<TemplateFormState>((set, get) => ({
       }
       return { jobs: newJobs };
     }),
+  setJobs: (jobs: Job[]) => set({ jobs }),
   reset: () => set({ name: '', description: '', jobs: [] }),
   getFormData: () => {
     const state = get();

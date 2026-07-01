@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ExecutionService } from '../../../services/execution.service';
 import { ExecutionJobsheet } from '../../types/execution';
 
 export default function ExecutionListPage() {
+  const router = useRouter();
   const [sheets, setSheets] = useState<ExecutionJobsheet[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +34,8 @@ export default function ExecutionListPage() {
     <div className="p-4">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Execution Jobsheets</h1>
-        <div>
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={() => router.push('/home')} className="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">← Back</button>
           <Link href="/execution/create" className="btn btn-primary">Add Jobsheet</Link>
         </div>
       </div>
