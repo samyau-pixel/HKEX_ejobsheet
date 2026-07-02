@@ -1,8 +1,8 @@
 <!-- SPECKIT START -->
-**Active Feature**: Role-Based Jobsheet Management System (`001-jobsheet-management`)
+**Active Feature**: Job Dependencies (`004-job-dependencies`)
 
-**Spec**: [specs/001-jobsheet-management/spec.md](specs/001-jobsheet-management/spec.md)  
-**Plan**: [specs/001-jobsheet-management/plan.md](specs/001-jobsheet-management/plan.md)
+**Spec**: [specs/004-job-dependencies/spec.md](specs/004-job-dependencies/spec.md)  
+**Plan**: [specs/004-job-dependencies/plan.md](specs/004-job-dependencies/plan.md)
 
 **Tech Stack** (Enforced):
 - Frontend: Next.js 14+ (App Router) with React 18+, TypeScript, Tailwind CSS
