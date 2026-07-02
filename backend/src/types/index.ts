@@ -26,6 +26,8 @@ export interface ExecutionJob {
   job_id: string;
   expected_start?: string;
   expected_end?: string;
+  timeDependency?: string;
+  prerequisiteJobIds?: string[];
   actual_start?: string;
   actual_end?: string;
   created_at: string;
@@ -61,6 +63,8 @@ export interface Job {
   job_order: number;
   expected_start?: string;
   expected_end?: string;
+  timeDependency?: string;
+  prerequisiteJobIds?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -93,6 +97,8 @@ export interface ExecutionJob {
   job_id: string;
   expected_start?: string;
   expected_end?: string;
+  timeDependency?: string;
+  prerequisiteJobIds?: string[];
   actual_start?: string;
   actual_end?: string;
   created_at: string;

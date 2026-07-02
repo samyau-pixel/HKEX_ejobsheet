@@ -11,15 +11,17 @@ export class JobModel {
     jobOrder: number,
     description?: string,
     expectedStart?: string,
-    expectedEnd?: string
+    expectedEnd?: string,
+    timeDependency?: string,
+    prerequisiteJobIds?: string[]
   ): Promise<Job> {
     const id = uuidv4();
     const now = new Date().toISOString();
 
     return new Promise((resolve, reject) => {
       db.run(
-        `INSERT INTO jobs (id, template_id, name, description, job_order, expected_start, expected_end, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO jobs (id, template_id, name, description, job_order, expected_start, expected_end, time_dependency, prerequisite_job_ids, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           templateId,
@@ -28,6 +30,8 @@ export class JobModel {
           jobOrder,
           expectedStart || null,
           expectedEnd || null,
+          timeDependency || null,
+          prerequisiteJobIds ? JSON.stringify(prerequisiteJobIds) : null,
           now,
           now,
         ],
@@ -43,6 +47,8 @@ export class JobModel {
               job_order: jobOrder,
               expected_start: expectedStart,
               expected_end: expectedEnd,
+              timeDependency: timeDependency,
+              prerequisiteJobIds: prerequisiteJobIds,
               created_at: now,
               updated_at: now,
             });
@@ -88,6 +94,16 @@ export class JobModel {
         } else {
           resolve();
         }
+      });
+    });
+  }
+
+  static async setPrerequisites(jobId: string, prerequisiteIds: string[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const now = new Date().toISOString();
+      db.run('UPDATE jobs SET prerequisite_job_ids = ?, updated_at = ? WHERE id = ?', [JSON.stringify(prerequisiteIds), now, jobId], function (err) {
+        if (err) reject(err);
+        else resolve();
       });
     });
   }

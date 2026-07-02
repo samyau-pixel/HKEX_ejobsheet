@@ -9,15 +9,27 @@ export class ExecutionJobModel {
     executionId: string,
     jobId: string,
     expectedStart?: string,
-    expectedEnd?: string
+    expectedEnd?: string,
+    timeDependency?: string,
+    prerequisiteJobIds?: string[]
   ): Promise<ExecutionJob> {
     const id = uuidv4();
     const now = new Date().toISOString();
 
     return new Promise((resolve, reject) => {
       db.run(
-        `INSERT INTO execution_jobs (id, execution_id, job_id, expected_start, expected_end, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [id, executionId, jobId, expectedStart || null, expectedEnd || null, now, now],
+        `INSERT INTO execution_jobs (id, execution_id, job_id, expected_start, expected_end, time_dependency, prerequisite_job_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          executionId,
+          jobId,
+          expectedStart || null,
+          expectedEnd || null,
+          timeDependency || null,
+          prerequisiteJobIds ? JSON.stringify(prerequisiteJobIds) : null,
+          now,
+          now,
+        ],
         function (err) {
           if (err) reject(err);
           else
@@ -27,6 +39,8 @@ export class ExecutionJobModel {
               job_id: jobId,
               expected_start: expectedStart || undefined,
               expected_end: expectedEnd || undefined,
+              timeDependency: timeDependency || undefined,
+              prerequisiteJobIds: prerequisiteJobIds || undefined,
               actual_start: undefined,
               actual_end: undefined,
               created_at: now,

@@ -13,6 +13,8 @@ export interface CreateTemplateInput {
     order: number;
     expectedStart?: string;
     expectedEnd?: string;
+    timeDependency?: string;
+    prerequisiteOrders?: number[];
     procedures: Array<{
       name: string;
       description?: string;
@@ -46,7 +48,8 @@ export class TemplateService {
       }
     > = [];
 
-    // Create jobs and procedures
+    // First pass: create jobs (without prerequisites)
+    const orderToJobId: Record<number, string> = {};
     for (const jobInput of sortedJobs) {
       const job = await JobModel.createJob(
         template.id,
@@ -54,17 +57,40 @@ export class TemplateService {
         jobInput.order,
         jobInput.description,
         jobInput.expectedStart,
-        jobInput.expectedEnd
+        jobInput.expectedEnd,
+        jobInput.timeDependency || undefined,
+        undefined
       );
+      orderToJobId[job.job_order] = job.id;
+
+      // create procedures later (after prerequisites set)
+      jobsWithProcedures.push({
+        ...job,
+        procedures: [],
+      });
+    }
+
+    // Second pass: set prerequisites and create procedures
+    for (let i = 0; i < sortedJobs.length; i++) {
+      const jobInput = sortedJobs[i];
+      const created = jobsWithProcedures[i];
+
+      // Map prerequisiteOrders (if any) to job ids
+      if (jobInput.prerequisiteOrders && jobInput.prerequisiteOrders.length > 0) {
+        const prereqIds = jobInput.prerequisiteOrders.map((o) => orderToJobId[o]).filter(Boolean);
+        if (prereqIds.length > 0) {
+          await JobModel.setPrerequisites(created.id, prereqIds);
+          created.prerequisiteJobIds = prereqIds;
+        }
+      }
 
       // Sort procedures by order
       const sortedProcedures = jobInput.procedures.sort((a, b) => a.order - b.order);
 
       const procedures: Procedure[] = [];
-
       for (const procInput of sortedProcedures) {
         const procedure = await ProcedureModel.createProcedure(
-          job.id,
+          created.id,
           procInput.name,
           procInput.order,
           procInput.description
@@ -72,10 +98,7 @@ export class TemplateService {
         procedures.push(procedure);
       }
 
-      jobsWithProcedures.push({
-        ...job,
-        procedures,
-      });
+      created.procedures = procedures;
     }
 
     return {
@@ -165,6 +188,8 @@ export class TemplateService {
       }
     > = [];
 
+    // First pass: create jobs
+    const orderToJobId: Record<number, string> = {};
     for (const jobInput of sortedJobs) {
       const job = await JobModel.createJob(
         id,
@@ -172,14 +197,32 @@ export class TemplateService {
         jobInput.order,
         jobInput.description,
         jobInput.expectedStart,
-        jobInput.expectedEnd
+        jobInput.expectedEnd,
+        jobInput.timeDependency || undefined,
+        undefined
       );
+      orderToJobId[job.job_order] = job.id;
+      jobsWithProcedures.push({ ...job, procedures: [] });
+    }
+
+    // Second pass: set prerequisites and create procedures
+    for (let i = 0; i < sortedJobs.length; i++) {
+      const jobInput = sortedJobs[i];
+      const created = jobsWithProcedures[i];
+
+      if (jobInput.prerequisiteOrders && jobInput.prerequisiteOrders.length > 0) {
+        const prereqIds = jobInput.prerequisiteOrders.map((o) => orderToJobId[o]).filter(Boolean);
+        if (prereqIds.length > 0) {
+          await JobModel.setPrerequisites(created.id, prereqIds);
+          created.prerequisiteJobIds = prereqIds;
+        }
+      }
 
       const sortedProcedures = jobInput.procedures.sort((a, b) => a.order - b.order);
       const procedures: Procedure[] = [];
       for (const procInput of sortedProcedures) {
         const procedure = await ProcedureModel.createProcedure(
-          job.id,
+          created.id,
           procInput.name,
           procInput.order,
           procInput.description
@@ -187,10 +230,7 @@ export class TemplateService {
         procedures.push(procedure);
       }
 
-      jobsWithProcedures.push({
-        ...job,
-        procedures,
-      });
+      created.procedures = procedures;
     }
 
     // If editing an approved template, mark it as Pending for re-approval
@@ -300,6 +340,36 @@ export class TemplateService {
         if (!proc.name || proc.name.trim().length === 0) {
           throw new ApiError(422, 'VALIDATION_ERROR', 'Procedure name is required');
         }
+      }
+    }
+
+    // Cycle detection for prerequisiteOrders if provided
+    const orderSet = new Set<number>(input.jobs.map((j) => j.order));
+    const adj: Record<number, number[]> = {};
+    for (const j of input.jobs) {
+      adj[j.order] = (j.prerequisiteOrders || []).filter((o) => orderSet.has(o));
+    }
+
+    const visited: Record<number, boolean> = {};
+    const recStack: Record<number, boolean> = {};
+
+    function hasCycle(node: number): boolean {
+      if (!visited[node]) {
+        visited[node] = true;
+        recStack[node] = true;
+
+        for (const neigh of adj[node] || []) {
+          if (!visited[neigh] && hasCycle(neigh)) return true;
+          else if (recStack[neigh]) return true;
+        }
+      }
+      recStack[node] = false;
+      return false;
+    }
+
+    for (const n of Object.keys(adj).map((k) => parseInt(k, 10))) {
+      if (hasCycle(n)) {
+        throw new ApiError(422, 'VALIDATION_ERROR', 'Circular job dependency detected');
       }
     }
   }

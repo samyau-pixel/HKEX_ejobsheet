@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getDatabase } from '../db/schema.js';
 import { JobCompletion } from '../types/index.js';
+import { ApiError } from '../middleware/error.middleware.js';
 
 const db = getDatabase();
 
@@ -36,6 +37,59 @@ export class JobCompletionModel {
   }
 
   static async markCompleted(executionId: string, jobId: string, userId: string): Promise<void> {
+    // Validate dependencies before marking completed
+    // 1) Check execution job record for time_dependency and prerequisite_job_ids
+    const execJob: any = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM execution_jobs WHERE execution_id = ? AND job_id = ?', [executionId, jobId], (err, row: any) => {
+        if (err) reject(err);
+        else resolve(row || null);
+      });
+    });
+
+    if (!execJob) {
+      throw new ApiError(404, 'EXECUTION_JOB_NOT_FOUND', `Execution job not found for execution ${executionId} and job ${jobId}`);
+    }
+
+    // Time dependency check
+    if (execJob.time_dependency) {
+      const now = new Date();
+      const dep = new Date(execJob.time_dependency);
+      if (now < dep) {
+        throw new ApiError(400, 'TIME_DEPENDENCY_NOT_MET', `Cannot complete before ${execJob.time_dependency}`);
+      }
+    }
+
+    // Prerequisite jobs check (prereq ids are template job ids stored as JSON array)
+    if (execJob.prerequisite_job_ids) {
+      let prereq: string[] = [];
+      try {
+        prereq = Array.isArray(execJob.prerequisite_job_ids) ? execJob.prerequisite_job_ids : JSON.parse(execJob.prerequisite_job_ids);
+      } catch (e) {
+        prereq = [];
+      }
+      if (prereq.length > 0) {
+        // Check completions for each prerequisite job id under this execution
+        const placeholders = prereq.map(() => '?').join(',');
+        const sql = `SELECT job_id, completed FROM job_completions WHERE execution_id = ? AND job_id IN (${placeholders})`;
+        const rows: any[] = await new Promise((resolve, reject) => {
+          db.all(sql, [executionId, ...prereq], (err, rows: any[]) => {
+            if (err) reject(err);
+            else resolve(rows || []);
+          });
+        });
+
+        const incomplete = prereq.filter((pid) => {
+          const r = rows.find((rr) => rr.job_id === pid);
+          return !r || r.completed !== 1;
+        });
+
+        if (incomplete.length > 0) {
+          throw new ApiError(400, 'PREREQUISITE_JOBS_INCOMPLETE', `Prerequisite jobs not completed: ${incomplete.join(',')}`);
+        }
+      }
+    }
+
+    // All checks passed; mark completed
     return new Promise((resolve, reject) => {
       const now = new Date().toISOString();
       db.run(

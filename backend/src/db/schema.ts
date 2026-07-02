@@ -56,6 +56,8 @@ export const initializeDatabase = (): Promise<void> => {
           job_order INTEGER NOT NULL,
           expected_start TIMESTAMP,
           expected_end TIMESTAMP,
+          time_dependency TIMESTAMP,
+          prerequisite_job_ids TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           UNIQUE(template_id, job_order),
@@ -104,6 +106,8 @@ export const initializeDatabase = (): Promise<void> => {
           job_id TEXT NOT NULL,
           expected_start TIMESTAMP,
           expected_end TIMESTAMP,
+          time_dependency TIMESTAMP,
+          prerequisite_job_ids TEXT,
           actual_start TIMESTAMP,
           actual_end TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -113,6 +117,22 @@ export const initializeDatabase = (): Promise<void> => {
           FOREIGN KEY(job_id) REFERENCES jobs(id)
         )
       `);
+
+      // Backfill/ensure columns exist for older DBs (no-op if columns already exist)
+      try {
+        db.run(`ALTER TABLE jobs ADD COLUMN time_dependency TIMESTAMP`);
+      } catch (e) {
+        // ignore - SQLite will error if column exists
+      }
+      try {
+        db.run(`ALTER TABLE jobs ADD COLUMN prerequisite_job_ids TEXT`);
+      } catch (e) {}
+      try {
+        db.run(`ALTER TABLE execution_jobs ADD COLUMN time_dependency TIMESTAMP`);
+      } catch (e) {}
+      try {
+        db.run(`ALTER TABLE execution_jobs ADD COLUMN prerequisite_job_ids TEXT`);
+      } catch (e) {}
 
       // Job Completions table
       db.run(`

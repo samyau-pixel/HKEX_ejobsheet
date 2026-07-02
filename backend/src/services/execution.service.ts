@@ -20,11 +20,48 @@ export class ExecutionService {
 
     const jobs = await JobModel.getJobsByTemplate(templateId);
 
+    // First pass: create execution jobs and map template job ids -> execution job ids
+    const mapping: Record<string, string> = {};
     for (const job of jobs) {
-      // create execution job
-      await ExecutionJobModel.createExecutionJob(execution.id, job.id, job.expected_start, job.expected_end);
+      const execJob = await ExecutionJobModel.createExecutionJob(
+        execution.id,
+        job.id,
+        job.expected_start,
+        job.expected_end,
+        job.timeDependency || job.time_dependency,
+        null // prerequisites will be set in second pass
+      );
+      mapping[job.id] = execJob.id;
       // create job completion stub
       await JobCompletionModel.createJobCompletion(execution.id, job.id);
+    }
+
+    // Second pass: update execution_jobs prerequisite_job_ids to point to execution job ids
+    for (const job of jobs) {
+      const rawPrereq = job.prerequisite_job_ids || job.prerequisiteJobIds || null;
+      let prereqTemplateIds: string[] = [];
+      if (rawPrereq) {
+        try {
+          prereqTemplateIds = Array.isArray(rawPrereq) ? rawPrereq : JSON.parse(rawPrereq);
+        } catch (e) {
+          prereqTemplateIds = [];
+        }
+      }
+      if (prereqTemplateIds.length > 0) {
+        const execJobId = mapping[job.id];
+        await new Promise<void>((resolve, reject) => {
+          const now = new Date().toISOString();
+          const db = (await import('../db/schema.js')).getDatabase();
+          db.run(
+            'UPDATE execution_jobs SET prerequisite_job_ids = ?, updated_at = ? WHERE id = ?',
+            [JSON.stringify(prereqTemplateIds), now, execJobId],
+            function (err) {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
+      }
     }
 
     return execution;
