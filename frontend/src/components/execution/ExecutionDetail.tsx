@@ -129,15 +129,50 @@ export default function ExecutionDetail({ id }: { id: string }) {
                       )}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={!!j.completed}
-                          disabled={detail.state !== 'Processing'}
-                          onChange={() => toggleComplete(j.job_id, !!j.completed)}
-                        />
-                        <span className="text-sm">Completed</span>
-                      </label>
+                      {(() => {
+                        // Determine blocking reasons from prerequisite_job_ids and time_dependency
+                        const prereqRaw = j.prerequisite_job_ids || j.prerequisiteJobIds || null;
+                        let prereqIds: string[] = [];
+                        if (prereqRaw) {
+                          try {
+                            prereqIds = Array.isArray(prereqRaw) ? prereqRaw : JSON.parse(prereqRaw);
+                          } catch (e) {
+                            prereqIds = [];
+                          }
+                        }
+
+                        const unmetPrereqs = (prereqIds || []).filter((tid: string) => {
+                          const found = detail.jobs.find((x: any) => x.job_id === tid);
+                          return !(found && found.completed);
+                        });
+
+                        const timeRaw = j.time_dependency || j.timeDependency || null;
+                        const now = new Date();
+                        const timeBlocked = timeRaw ? now < new Date(timeRaw) : false;
+
+                        const blockedReasons: string[] = [];
+                        if (unmetPrereqs.length > 0) blockedReasons.push(`Prerequisite jobs incomplete (${unmetPrereqs.length})`);
+                        if (timeBlocked) blockedReasons.push('Time dependency not reached');
+
+                        const disabled = blockedReasons.length > 0 || detail.state !== 'Processing';
+
+                        return (
+                          <div className="flex flex-col">
+                            <label className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={!!j.completed}
+                                disabled={disabled}
+                                onChange={() => toggleComplete(j.job_id, !!j.completed)}
+                              />
+                              <span className="text-sm">Completed</span>
+                            </label>
+                            {disabled && !j.completed && blockedReasons.length > 0 && (
+                              <div className="text-xs text-amber-600 mt-1">{blockedReasons.join(' · ')}</div>
+                            )}
+                          </div>
+                        );
+                      })()}
                       {j.completed && !isLeaderReviewed && detail.state === 'Processing' && (
                         <button 
                           className="btn btn-sm bg-amber-500 hover:bg-amber-600 text-white" 
