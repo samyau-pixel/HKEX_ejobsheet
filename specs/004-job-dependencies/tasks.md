@@ -19,15 +19,15 @@ Phase 2: Foundational (blocking prerequisites)
 
 Phase 3: User Story Implementation
 
-- [ ] T008 [US1] [P] Add frontend template editor controls (datetime picker + multi-select prerequisite list) in frontend/src/components/templates/TemplateJobEditor.tsx
-- [ ] T009 [US1] [P] Frontend validation: prevent selecting the job itself as prerequisite and display helpful UI messages in frontend/src/components/templates/TemplateJobEditor.tsx
-- [ ] T010 [US1] Add frontend unit tests for the template editor: frontend/tests/unit/template-job-editor.test.tsx
+- [x] T008 [US1] [P] Add frontend template editor controls (datetime picker + multi-select prerequisite list) in frontend/src/components/templates/TemplateJobEditor.tsx
+- [x] T009 [US1] [P] Frontend validation: prevent selecting the job itself as prerequisite and display helpful UI messages in frontend/src/components/templates/TemplateJobEditor.tsx
+- [x] T010 [US1] Add frontend unit tests for the template editor: frontend/tests/unit/template-job-editor.test.tsx
 
  - [x] T011 [US2] [P] Implement clone endpoint behavior in backend/src/services/execution.service.ts and ensure `prerequisiteJobIds` are converted to execution job ids
 - [ ] T012 [US2] Add integration test verifying cloned execution jobs include dependency metadata: tests/integration/clone-template-dependencies.test.ts
 
  - [x] T013 [US3] Implement job-completion endpoint with dependency checks in backend/src/services/execution.service.ts (validate time + completion of prerequisite execution jobs)
-- [ ] T014 [US3] [P] Update frontend execution UI to disable/grey-out completion checkbox with explanatory tooltip when dependencies are unmet: frontend/src/components/execution/ExecutionJobItem.tsx
+- [x] T014 [US3] [P] Update frontend execution UI to disable/grey-out completion checkbox with explanatory tooltip when dependencies are unmet: frontend/src/components/execution/ExecutionJobItem.tsx
 - [ ] T015 [US3] Add integration tests covering time-based blocking and job-dependency blocking: tests/integration/execution-dependency-enforcement.test.ts
 
 Phase 4: Polish & Cross-cutting
