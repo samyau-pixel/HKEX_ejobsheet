@@ -5,6 +5,7 @@ interface TemplateFormState {
   name: string;
   description: string;
   jobs: Job[];
+  setJobs: (jobs: Job[]) => void;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
   addJob: (job: Job) => void;
@@ -31,6 +32,8 @@ export const useTemplateFormStore = create<TemplateFormState>((set, get) => ({
           ...job,
           order: state.jobs.length + 1,
           procedures: [],
+          timeDependency: job.timeDependency || undefined,
+          prerequisiteOrders: job.prerequisiteOrders || [],
         },
       ],
     })),
@@ -42,7 +45,18 @@ export const useTemplateFormStore = create<TemplateFormState>((set, get) => ({
     }),
   removeJob: (index: number) =>
     set((state) => ({
-      jobs: state.jobs.filter((_, i) => i !== index),
+      jobs: (() => {
+        const removed = state.jobs[index];
+        const removedOrder = removed?.order;
+        const newJobs = state.jobs.filter((_, i) => i !== index).map((j, idx) => ({
+          ...j,
+          order: idx + 1,
+          prerequisiteOrders: (j.prerequisiteOrders || [])
+            .map((o) => (removedOrder && o > removedOrder ? o - 1 : o))
+            .filter((o) => o !== idx + 1),
+        }));
+        return newJobs;
+      })(),
     })),
   addProcedure: (jobIndex: number, procedure: Procedure) =>
     set((state) => {
@@ -81,7 +95,16 @@ export const useTemplateFormStore = create<TemplateFormState>((set, get) => ({
     return {
       name: state.name,
       description: state.description,
-      jobs: state.jobs,
+      jobs: state.jobs.map((j) => ({
+        name: j.name,
+        description: j.description,
+        order: j.order,
+        expectedStart: j.expectedStart,
+        expectedEnd: j.expectedEnd,
+        timeDependency: j.timeDependency,
+        prerequisiteOrders: j.prerequisiteOrders || [],
+        procedures: j.procedures || [],
+      })),
     };
   },
 }));

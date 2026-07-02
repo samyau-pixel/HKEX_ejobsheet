@@ -12,6 +12,8 @@ export interface Job {
   order: number;
   expectedStart?: string;
   expectedEnd?: string;
+  timeDependency?: string;
+  prerequisiteOrders?: number[];
   procedures: Procedure[];
 }
 

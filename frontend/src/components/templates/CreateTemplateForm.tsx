@@ -63,6 +63,8 @@ export const CreateTemplateForm: React.FC<{
       description: '',
       order: jobs.length + 1,
       procedures: [],
+      timeDependency: undefined,
+      prerequisiteOrders: [],
     };
     addJobToStore(newJob);
   };
@@ -182,6 +184,46 @@ export const CreateTemplateForm: React.FC<{
               >
                 + Add Procedure
               </button>
+            </div>
+
+            {/* Dependency controls */}
+            <div className="ml-2 space-y-2">
+              <label className="block text-sm font-medium">Time Dependency (optional)</label>
+              <input
+                type="datetime-local"
+                value={job.timeDependency || ''}
+                onChange={(e) =>
+                  updateJobInStore(jobIndex, {
+                    ...job,
+                    timeDependency: e.target.value || undefined,
+                  })
+                }
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <label className="block text-sm font-medium">Prerequisite Jobs (optional)</label>
+              <select
+                multiple
+                value={(job.prerequisiteOrders || []).map(String)}
+                onChange={(e) => {
+                  const options = Array.from(e.target.selectedOptions).map((o) => parseInt(o.value, 10));
+                  // prevent self-selection
+                  const filtered = options.filter((o) => o !== job.order);
+                  updateJobInStore(jobIndex, {
+                    ...job,
+                    prerequisiteOrders: filtered,
+                  });
+                }}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                {jobs
+                  .filter((_, i) => i !== jobIndex)
+                  .map((j) => (
+                    <option key={j.order} value={j.order}>
+                      {`${j.order}. ${j.name || 'Untitled Job'}`}
+                    </option>
+                  ))}
+              </select>
             </div>
           </div>
         ))}
