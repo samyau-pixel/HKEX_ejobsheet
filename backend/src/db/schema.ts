@@ -119,20 +119,20 @@ export const initializeDatabase = (): Promise<void> => {
       `);
 
       // Backfill/ensure columns exist for older DBs (no-op if columns already exist)
-      try {
-        db.run(`ALTER TABLE jobs ADD COLUMN time_dependency TIMESTAMP`);
-      } catch (e) {
-        // ignore - SQLite will error if column exists
-      }
-      try {
-        db.run(`ALTER TABLE jobs ADD COLUMN prerequisite_job_ids TEXT`);
-      } catch (e) {}
-      try {
-        db.run(`ALTER TABLE execution_jobs ADD COLUMN time_dependency TIMESTAMP`);
-      } catch (e) {}
-      try {
-        db.run(`ALTER TABLE execution_jobs ADD COLUMN prerequisite_job_ids TEXT`);
-      } catch (e) {}
+      // Backfill/ensure columns exist for older DBs (no-op if columns already exist)
+      // Use callbacks to swallow 'column exists' errors instead of throwing
+      db.run(`ALTER TABLE jobs ADD COLUMN time_dependency TIMESTAMP`, (err) => {
+        // ignore if column already exists
+      });
+      db.run(`ALTER TABLE jobs ADD COLUMN prerequisite_job_ids TEXT`, (err) => {
+        // ignore if column already exists
+      });
+      db.run(`ALTER TABLE execution_jobs ADD COLUMN time_dependency TIMESTAMP`, (err) => {
+        // ignore if column already exists
+      });
+      db.run(`ALTER TABLE execution_jobs ADD COLUMN prerequisite_job_ids TEXT`, (err) => {
+        // ignore if column already exists
+      });
 
       // Job Completions table
       db.run(`

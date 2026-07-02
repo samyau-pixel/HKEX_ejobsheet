@@ -28,8 +28,8 @@ export class ExecutionService {
         job.id,
         job.expected_start,
         job.expected_end,
-        job.timeDependency || job.time_dependency,
-        null // prerequisites will be set in second pass
+        job.timeDependency || (job as any).time_dependency,
+        undefined // prerequisites will be set in second pass
       );
       mapping[job.id] = execJob.id;
       // create job completion stub
@@ -38,7 +38,7 @@ export class ExecutionService {
 
     // Second pass: update execution_jobs prerequisite_job_ids to point to execution job ids
     for (const job of jobs) {
-      const rawPrereq = job.prerequisite_job_ids || job.prerequisiteJobIds || null;
+      const rawPrereq = (job as any).prerequisite_job_ids || job.prerequisiteJobIds || null;
       let prereqTemplateIds: string[] = [];
       if (rawPrereq) {
         try {
@@ -49,9 +49,10 @@ export class ExecutionService {
       }
       if (prereqTemplateIds.length > 0) {
         const execJobId = mapping[job.id];
+        const now = new Date().toISOString();
+        const dbModule = await import('../db/schema.js');
+        const db = dbModule.getDatabase();
         await new Promise<void>((resolve, reject) => {
-          const now = new Date().toISOString();
-          const db = (await import('../db/schema.js')).getDatabase();
           db.run(
             'UPDATE execution_jobs SET prerequisite_job_ids = ?, updated_at = ? WHERE id = ?',
             [JSON.stringify(prereqTemplateIds), now, execJobId],
