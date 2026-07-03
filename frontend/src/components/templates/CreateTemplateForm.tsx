@@ -202,28 +202,33 @@ export const CreateTemplateForm: React.FC<{
               />
 
               <label className="block text-sm font-medium">Prerequisite Jobs (optional)</label>
-              <select
-                multiple
-                value={(job.prerequisiteOrders || []).map(String)}
-                onChange={(e) => {
-                  const options = Array.from(e.target.selectedOptions).map((o) => parseInt(o.value, 10));
-                  // prevent self-selection
-                  const filtered = options.filter((o) => o !== job.order);
-                  updateJobInStore(jobIndex, {
-                    ...job,
-                    prerequisiteOrders: filtered,
-                  });
-                }}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              >
+              <div className="space-y-1">
                 {jobs
                   .filter((_, i) => i !== jobIndex)
-                  .map((j) => (
-                    <option key={j.order} value={j.order}>
-                      {`${j.order}. ${j.name || 'Untitled Job'}`}
-                    </option>
-                  ))}
-              </select>
+                  .map((j) => {
+                    const checked = (job.prerequisiteOrders || []).includes(j.order);
+                    return (
+                      <label key={j.order} className="flex items-center gap-2 text-sm bg-white p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const prev = job.prerequisiteOrders || [];
+                            let next: number[];
+                            if (e.target.checked) next = Array.from(new Set([...prev, j.order]));
+                            else next = prev.filter((o) => o !== j.order);
+                            updateJobInStore(jobIndex, {
+                              ...job,
+                              prerequisiteOrders: next,
+                            });
+                          }}
+                          className="h-4 w-4"
+                        />
+                        <span>{`${j.order}. ${j.name || 'Untitled Job'}`}</span>
+                      </label>
+                    );
+                  })}
+              </div>
             </div>
           </div>
         ))}

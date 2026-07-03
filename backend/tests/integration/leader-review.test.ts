@@ -19,7 +19,7 @@ describe('Integration: Leader Review API', () => {
   beforeAll(async () => {
     // Get operator and leader tokens
     const operator = { id: 'user-operator-001', email: 'operator@test.com', name: 'Alice Operator', role: 'Operator' };
-    const leader = { id: 'user-manager-001', email: 'manager@test.com', name: 'Jane Manager', role: 'Manager' };
+    const leader = { id: 'user-leader-001', email: 'leader@test.com', name: 'John Leader', role: 'OperatorLeader' };
 
     operatorToken = AuthService.generateToken(operator as any);
     leaderToken = AuthService.generateToken(leader as any);
@@ -62,8 +62,8 @@ describe('Integration: Leader Review API', () => {
         .post(`/api/execution-sheets/${executionId}/jobs/${jobId}/leader-review`)
         .set('Authorization', `Bearer ${leaderToken}`)
         .send({
-          userId: 'user-manager-001',
-          password: 'password123'
+          userId: 'user-leader-001',
+          password: 'Password123!'
         });
 
       expect(res.status).toBe(200);
@@ -76,7 +76,7 @@ describe('Integration: Leader Review API', () => {
         .post(`/api/execution-sheets/${executionId}/jobs/${jobId}/leader-review`)
         .set('Authorization', `Bearer ${leaderToken}`)
         .send({
-          userId: 'user-manager-001',
+          userId: 'user-leader-001',
           password: 'wrongpassword'
         });
 
@@ -89,8 +89,8 @@ describe('Integration: Leader Review API', () => {
       const res = await request(app)
         .post(`/api/execution-sheets/${executionId}/jobs/${jobId}/leader-review`)
         .send({
-          userId: 'user-manager-001',
-          password: 'password123'
+          userId: 'user-leader-001',
+          password: 'Password123!'
         });
 
       expect(res.status).toBe(401);
@@ -161,8 +161,8 @@ describe('Integration: Leader Review API', () => {
           .post(`/api/execution-sheets/${executionId}/jobs/${job.job_id}/leader-review`)
           .set('Authorization', `Bearer ${leaderToken}`)
           .send({
-            userId: 'user-manager-001',
-            password: 'password123'
+            userId: 'user-leader-001',
+            password: 'Password123!'
           });
       }
 
@@ -213,8 +213,8 @@ describe('Integration: Leader Review API', () => {
         .post(`/api/execution-sheets/${testExecId}/jobs/${testJobs[0].job_id}/leader-review`)
         .set('Authorization', `Bearer ${leaderToken}`)
         .send({
-          userId: 'user-manager-001',
-          password: 'password123'
+          userId: 'user-leader-001',
+          password: 'Password123!'
         });
 
       const res = await request(app)
@@ -249,6 +249,13 @@ describe('Integration: Leader Review API', () => {
         .send({ templateId: template.id, name: 'Test Block' });
 
       const blockExecId = execRes.body.data.id;
+      
+      // Check in to move to Processing state
+      await request(app)
+        .post(`/api/execution-sheets/${blockExecId}/check-in`)
+        .set('Authorization', `Bearer ${operatorToken}`)
+        .send();
+      
       const blockJobs = (await request(app)
         .get(`/api/execution-sheets/${blockExecId}`)
         .set('Authorization', `Bearer ${operatorToken}`)).body.data.jobs;
@@ -257,7 +264,8 @@ describe('Integration: Leader Review API', () => {
       for (const job of blockJobs) {
         await request(app)
           .post(`/api/execution-sheets/${blockExecId}/jobs/${job.job_id}/complete`)
-          .set('Authorization', `Bearer ${operatorToken}`);
+          .set('Authorization', `Bearer ${operatorToken}`)
+          .send();
       }
 
       // Try to complete execution - should fail
@@ -266,7 +274,7 @@ describe('Integration: Leader Review API', () => {
         .set('Authorization', `Bearer ${operatorToken}`);
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toBe('PENDING_LEADER_REVIEWS');
+      expect(res.body.code).toBe('PENDING_LEADER_REVIEWS');
       expect(res.body.message).toContain('pending review');
     });
 
@@ -289,6 +297,13 @@ describe('Integration: Leader Review API', () => {
         .send({ templateId: template.id, name: 'Test Allow' });
 
       const allowExecId = execRes.body.data.id;
+      
+      // Check in to move to Processing state
+      await request(app)
+        .post(`/api/execution-sheets/${allowExecId}/check-in`)
+        .set('Authorization', `Bearer ${operatorToken}`)
+        .send();
+      
       const allowJobs = (await request(app)
         .get(`/api/execution-sheets/${allowExecId}`)
         .set('Authorization', `Bearer ${operatorToken}`)).body.data.jobs;
@@ -296,14 +311,15 @@ describe('Integration: Leader Review API', () => {
       // Mark complete and review
       await request(app)
         .post(`/api/execution-sheets/${allowExecId}/jobs/${allowJobs[0].job_id}/complete`)
-        .set('Authorization', `Bearer ${operatorToken}`);
+        .set('Authorization', `Bearer ${operatorToken}`)
+        .send();
 
       await request(app)
         .post(`/api/execution-sheets/${allowExecId}/jobs/${allowJobs[0].job_id}/leader-review`)
         .set('Authorization', `Bearer ${leaderToken}`)
         .send({
-          userId: 'user-manager-001',
-          password: 'password123'
+          userId: 'user-leader-001',
+          password: 'Password123!'
         });
 
       // Complete execution - should succeed
@@ -324,17 +340,24 @@ describe('Integration: Leader Review API', () => {
 
       const testJobId = detailRes.body.data.jobs[1].job_id;
 
+      // Check in first to move to Processing state
+      await request(app)
+        .post(`/api/execution-sheets/${executionId}/check-in`)
+        .set('Authorization', `Bearer ${operatorToken}`)
+        .send();
+
       // Mark complete and review
       await request(app)
         .post(`/api/execution-sheets/${executionId}/jobs/${testJobId}/complete`)
-        .set('Authorization', `Bearer ${operatorToken}`);
+        .set('Authorization', `Bearer ${operatorToken}`)
+        .send();
 
       await request(app)
         .post(`/api/execution-sheets/${executionId}/jobs/${testJobId}/leader-review`)
         .set('Authorization', `Bearer ${leaderToken}`)
         .send({
-          userId: 'user-manager-001',
-          password: 'password123'
+          userId: 'user-leader-001',
+          password: 'Password123!'
         });
 
       // Verify reviewed
@@ -347,7 +370,8 @@ describe('Integration: Leader Review API', () => {
       // Unmark complete
       await request(app)
         .post(`/api/execution-sheets/${executionId}/jobs/${testJobId}/uncomplete`)
-        .set('Authorization', `Bearer ${operatorToken}`);
+        .set('Authorization', `Bearer ${operatorToken}`)
+        .send();
 
       // Verify invalidated
       statusRes = await request(app)

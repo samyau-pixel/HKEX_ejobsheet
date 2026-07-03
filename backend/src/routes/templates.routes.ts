@@ -10,7 +10,7 @@ const router = Router();
 router.post(
   '/',
   authMiddleware,
-  rbacMiddleware('Operator', 'OperatorLeader', 'Manager'),
+  rbacMiddleware('Manager', 'OperatorLeader'),
   validateRequest(templateSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -20,6 +20,9 @@ router.post(
       }
 
       const template = await TemplateService.createTemplate(userId, req.body);
+      // DEBUG: log incoming create payload for troubleshooting
+      // (temporary) - remove after debugging
+      console.log('[DEBUG] create template payload:', JSON.stringify(req.body));
 
       res.status(201).json({
         status: 201,

@@ -19,6 +19,14 @@ class ApiClient {
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      // DEBUG: log outgoing create/update template payloads
+      try {
+        if (typeof window !== 'undefined' && config && config.url && (config.url.includes('/templates') && (config.method === 'post' || config.method === 'put'))) {
+          console.log('[DEBUG][api] outgoing', config.method, config.url, JSON.stringify(config.data));
+        }
+      } catch (e) {
+        // ignore
+      }
       return config;
     });
 

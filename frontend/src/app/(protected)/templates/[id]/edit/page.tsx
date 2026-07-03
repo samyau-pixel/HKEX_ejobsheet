@@ -28,13 +28,29 @@ export default function EditTemplatePage({ params }: { params: { id: string } })
         setName(t.name || '');
         setDescription(t.description || '');
 
-        // Build jobs with procedures and set them atomically to avoid duplication issues
+        // Build jobs with procedures and dependencies, set them atomically
         const jobsForStore = (t.jobs || []).map((job: any, idx: number) => ({
           name: job.name,
           description: job.description || '',
           order: job.job_order || idx + 1,
           expected_start: job.expected_start,
           expected_end: job.expected_end,
+          timeDependency: job.time_dependency || job.timeDependency || undefined,
+          prerequisiteOrders: (() => {
+            const raw = (job.prerequisite_job_ids || job.prerequisiteJobIds || null);
+            let ids: string[] = [];
+            if (!raw) ids = [];
+            else if (Array.isArray(raw)) ids = raw;
+            else if (typeof raw === 'string') {
+              try { ids = JSON.parse(raw); } catch (e) { ids = []; }
+            }
+            return ids
+              .map((pid: string) => {
+                const prereqJob = t.jobs?.find((j: any) => j.id === pid);
+                return prereqJob ? prereqJob.job_order : 0;
+              })
+              .filter((o: number) => o > 0);
+          })(),
           procedures: (job.procedures || []).map((p: any, pIdx: number) => ({
             name: p.name,
             description: p.description || '',

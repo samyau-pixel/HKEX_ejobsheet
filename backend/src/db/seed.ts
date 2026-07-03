@@ -120,6 +120,40 @@ export const seedDatabase = async (): Promise<void> => {
           }
         }
       );
+
+              // Additional template with dependencies example
+              const depTemplateId = uuidv4();
+              db.run(
+                `INSERT OR IGNORE INTO templates (id, user_id, name, description, state) VALUES (?, ?, ?, ?, ?)`,
+                [depTemplateId, 'user-operator-001', 'Dependency Example', 'Template with time and job prerequisites', 'Pending'],
+                (err) => {
+                  if (err) {
+                    // ignore
+                  } else {
+                    const dJob1 = uuidv4();
+                    const dJob2 = uuidv4();
+                    const dJob3 = uuidv4();
+
+                    // job1 - no prereq
+                    db.run(
+                      `INSERT OR IGNORE INTO jobs (id, template_id, name, job_order, expected_start, expected_end, time_dependency, prerequisite_job_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                      [dJob1, depTemplateId, 'Initial Check', 1, new Date().toISOString(), new Date(Date.now() + 1800000).toISOString(), null, null]
+                    );
+
+                    // job2 - depends on job1
+                    db.run(
+                      `INSERT OR IGNORE INTO jobs (id, template_id, name, job_order, expected_start, expected_end, time_dependency, prerequisite_job_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                      [dJob2, depTemplateId, 'Dependent Task', 2, new Date(Date.now() + 1800000).toISOString(), new Date(Date.now() + 3600000).toISOString(), null, JSON.stringify([dJob1])]
+                    );
+
+                    // job3 - time-dependent (cannot run until 1 hour later)
+                    db.run(
+                      `INSERT OR IGNORE INTO jobs (id, template_id, name, job_order, expected_start, expected_end, time_dependency, prerequisite_job_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                      [dJob3, depTemplateId, 'Scheduled Check', 3, new Date(Date.now() + 3600000).toISOString(), new Date(Date.now() + 5400000).toISOString(), new Date(Date.now() + 3600000).toISOString(), null]
+                    );
+                  }
+                }
+              );
     });
   });
 };

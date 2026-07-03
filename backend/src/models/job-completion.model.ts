@@ -2,6 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { getDatabase } from '../db/schema.js';
 import { JobCompletion } from '../types/index.js';
 import { ApiError } from '../middleware/error.middleware.js';
+import pino from 'pino';
+
+const logger = pino();
 
 const db = getDatabase();
 
@@ -55,6 +58,7 @@ export class JobCompletionModel {
       const now = new Date();
       const dep = new Date(execJob.time_dependency);
       if (now < dep) {
+        logger.info({ executionId, jobId, timeDependency: execJob.time_dependency, now: now.toISOString() }, 'Time dependency not met');
         throw new ApiError(400, 'TIME_DEPENDENCY_NOT_MET', `Cannot complete before ${execJob.time_dependency}`);
       }
     }
@@ -84,6 +88,7 @@ export class JobCompletionModel {
         });
 
         if (incomplete.length > 0) {
+          logger.info({ executionId, jobId, prereq, incomplete }, 'Prerequisite jobs incomplete, blocking completion');
           throw new ApiError(400, 'PREREQUISITE_JOBS_INCOMPLETE', `Prerequisite jobs not completed: ${incomplete.join(',')}`);
         }
       }
@@ -153,7 +158,9 @@ export class JobCompletionModel {
         [userId, now, now, executionId, jobId],
         function (err) {
           if (err) reject(err);
-          else resolve();
+          else if ((this as any).changes === 0) {
+            reject(new ApiError(404, 'JOB_COMPLETION_NOT_FOUND', `Job completion not found for execution ${executionId} and job ${jobId}`));
+          } else resolve();
         }
       );
     });
@@ -167,7 +174,9 @@ export class JobCompletionModel {
         [now, executionId, jobId],
         function (err) {
           if (err) reject(err);
-          else resolve();
+          else if ((this as any).changes === 0) {
+            reject(new ApiError(404, 'JOB_COMPLETION_NOT_FOUND', `Job completion not found for execution ${executionId} and job ${jobId}`));
+          } else resolve();
         }
       );
     });

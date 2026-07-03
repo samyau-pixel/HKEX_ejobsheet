@@ -31,7 +31,7 @@ export const useTemplateFormStore = create<TemplateFormState>((set, get) => ({
         {
           ...job,
           order: state.jobs.length + 1,
-          procedures: [],
+          procedures: job.procedures || [],
           timeDependency: job.timeDependency || undefined,
           prerequisiteOrders: job.prerequisiteOrders || [],
         },

@@ -47,6 +47,8 @@ export const jobSchema = Joi.object({
   order: Joi.number().integer().required(),
   expectedStart: Joi.date().iso().optional(),
   expectedEnd: Joi.date().iso().optional(),
+  timeDependency: Joi.date().iso().optional(),
+  prerequisiteOrders: Joi.array().items(Joi.number().integer()).optional(),
   procedures: Joi.array().items(procedureSchema).min(1).required(),
 });
 

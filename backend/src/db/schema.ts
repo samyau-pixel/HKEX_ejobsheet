@@ -1,14 +1,13 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'fs';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(__dirname, '../../data/jobsheet.db');
-
-// Ensure data directory exists
-import { promises as fs } from 'fs';
-const dataDir = path.join(__dirname, '../../data');
-await fs.mkdir(dataDir, { recursive: true });
+// Use process.cwd() as base so tests (Jest) and runtime resolve the same DB path
+const dbPath = path.join(process.cwd(), 'data', 'jobsheet.db');
+const dataDir = path.join(process.cwd(), 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
 const db = new sqlite3.Database(dbPath);
 
@@ -121,16 +120,16 @@ export const initializeDatabase = (): Promise<void> => {
       // Backfill/ensure columns exist for older DBs (no-op if columns already exist)
       // Backfill/ensure columns exist for older DBs (no-op if columns already exist)
       // Use callbacks to swallow 'column exists' errors instead of throwing
-      db.run(`ALTER TABLE jobs ADD COLUMN time_dependency TIMESTAMP`, (err) => {
+      db.run(`ALTER TABLE jobs ADD COLUMN time_dependency TIMESTAMP`, (_err) => {
         // ignore if column already exists
       });
-      db.run(`ALTER TABLE jobs ADD COLUMN prerequisite_job_ids TEXT`, (err) => {
+      db.run(`ALTER TABLE jobs ADD COLUMN prerequisite_job_ids TEXT`, (_err) => {
         // ignore if column already exists
       });
-      db.run(`ALTER TABLE execution_jobs ADD COLUMN time_dependency TIMESTAMP`, (err) => {
+      db.run(`ALTER TABLE execution_jobs ADD COLUMN time_dependency TIMESTAMP`, (_err) => {
         // ignore if column already exists
       });
-      db.run(`ALTER TABLE execution_jobs ADD COLUMN prerequisite_job_ids TEXT`, (err) => {
+      db.run(`ALTER TABLE execution_jobs ADD COLUMN prerequisite_job_ids TEXT`, (_err) => {
         // ignore if column already exists
       });
 

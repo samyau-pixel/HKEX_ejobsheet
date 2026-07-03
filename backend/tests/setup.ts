@@ -1,2 +1,1 @@
-// Jest setup file
-import 'ts-node/esm';
+// Jest setup file - intentionally empty for ts-jest environment

@@ -1,3 +1,28 @@
+# Quickstart — Job Dependencies Feature
+
+Developer quickstart to run locally with the new job-dependencies feature.
+
+1. From the repo root, run:
+
+```powershell
+cd backend
+npm install
+npm run build
+npm start
+```
+
+2. (Dev) For iterative work, delete the DB to reseed example templates:
+
+```powershell
+Remove-Item .\data\jobsheet.db -Force
+npm run dev
+```
+
+3. Example template seeded: `Dependency Example` includes three jobs: initial job, a job depending on the initial job, and a time-dependent job.
+
+4. API endpoints of interest:
+- `POST /api/execution-sheets` — create execution from template
+- `POST /api/execution-sheets/:id/jobs/:jobId/complete` — mark job complete (enforced dependencies)
 # Quickstart: Job Dependencies Feature (local)
 
 1. Ensure the repo is on the feature branch:
