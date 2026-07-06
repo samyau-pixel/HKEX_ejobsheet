@@ -142,4 +142,20 @@ export class TemplateModel {
       );
     });
   }
+
+  static async hasExecutions(id: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      db.get(
+        'SELECT COUNT(*) as count FROM execution_jobsheets WHERE template_id = ?',
+        [id],
+        (err, row: any) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve((row?.count || 0) > 0);
+          }
+        }
+      );
+    });
+  }
 }

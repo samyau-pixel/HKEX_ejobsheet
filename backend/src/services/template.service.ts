@@ -171,6 +171,14 @@ export class TemplateService {
     const prevState = template.state;
 
     // Update template metadata
+    // If template has executions, create a new template (version) instead of modifying in-place
+    const hasExec = await TemplateModel.hasExecutions(id as string);
+    if (hasExec) {
+      // Create a new template owned by the same user as the original
+      const newTemplate = await TemplateService.createTemplate(template.user_id, input);
+      return newTemplate;
+    }
+
     await TemplateModel.updateTemplate(id, input.name, input.description);
 
     // Remove existing procedures and jobs

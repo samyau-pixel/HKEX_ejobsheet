@@ -29,13 +29,21 @@ export default function EditTemplatePage({ params }: { params: { id: string } })
         setDescription(t.description || '');
 
         // Build jobs with procedures and dependencies, set them atomically
+        const toDateTimeLocal = (val: any) => {
+          if (!val) return undefined;
+          const d = new Date(val);
+          if (isNaN(d.getTime())) return undefined;
+          const pad = (n: number) => n.toString().padStart(2, '0');
+          return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        };
+
         const jobsForStore = (t.jobs || []).map((job: any, idx: number) => ({
           name: job.name,
           description: job.description || '',
           order: job.job_order || idx + 1,
           expected_start: job.expected_start,
           expected_end: job.expected_end,
-          timeDependency: job.time_dependency || job.timeDependency || undefined,
+          timeDependency: toDateTimeLocal(job.time_dependency || job.timeDependency),
           prerequisiteOrders: (() => {
             const raw = (job.prerequisite_job_ids || job.prerequisiteJobIds || null);
             let ids: string[] = [];
